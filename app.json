@@ -4,7 +4,7 @@
     "slug": "HCIS",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/ihc.png",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/SplashScreen.png",
@@ -19,14 +19,17 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/ihc.png",
+        "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.ardisn1009.HCIS"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-
     "plugins": [
       [
         "expo-image-picker",
@@ -34,7 +37,12 @@
           "cameraPermission": "The app need accesses to your camera in order to take photos."
         }
       ]
-    ]
-    
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "ff42d12f-a6bc-4484-b0b3-4e4a1897daac"
+      }
+    },
+    "owner": "ardisn1009"
   }
 }
