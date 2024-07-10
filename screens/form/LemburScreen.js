@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, SafeAreaView, ScrollView, Pressable, StyleSheet, Button, TextInput, Platform } from "react-native";
+import { View, Text, SafeAreaView, ScrollView, Pressable, StyleSheet, Alert, TextInput, Platform } from "react-native";
 import Inputan from "../../components/Inputan";
 import { Dropdown } from 'react-native-element-dropdown';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import TextPanjang from "../../components/TextPanjang";
 import { Picker } from '@react-native-picker/picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ActivityIndicator } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 
 function LemburScreen() {
+
+    const navigation = useNavigation();
+
     const data = [
-        { label: 'Hari Kerja', value: '1' },
-        { label: 'Hari Libur', value: '2' },
+        { label: 'Hari Kerja', value: 'Hari Kerja' },
+        { label: 'Hari Libur', value: 'Hari Libur' },
     ];
     const [value, setValue] = useState(null);
     const [isFocus, setIsFocus] = useState(false);
@@ -21,13 +27,102 @@ function LemburScreen() {
     const [endTime, setEndTime] = useState(new Date());
     const [showStartTimePicker, setShowStartTimePicker] = useState(false);
     const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+    const [userData, setUserData] = useState(null);
+    const [alasan, setAlasan] = useState('');
+
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const userDataJson = await AsyncStorage.getItem('userData');
+                const userData = JSON.parse(userDataJson);
+                setUserData(userData);
+            } catch (error) {
+                console.error('Error fetching user data from AsyncStorage:', error);
+            }
+        };
+
+        fetchUserData();
+    }, []);
+
+    const handlePengajuanLembur = async () => {
+        try {
+            if (!userData || !userData.id_pegawai) {
+                Alert.alert('Error', 'User data is missing or invalid. Please try again.');
+                return;
+            }
+
+            const requestData = {
+                id_pegawai: userData.id_pegawai,
+                tgl_pengajuan: new Date().toISOString().split('T')[0],
+                tgl_lembur: startDate.toISOString().split('T')[0],
+                waktu_mulai: startTime.toLocaleTimeString('en-US', { hour12: false }),
+                waktu_akhir: endTime.toLocaleTimeString('en-US', { hour12: false }),
+                jns_lembur: value,
+                keterangan: alasan,
+            };
+
+            const waktuMulai = new Date(data.waktu_mulai).toLocaleTimeString('id-ID', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            });
+            
+            const waktuAkhir = new Date(data.waktu_akhir).toLocaleTimeString('id-ID', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            });
+
+            const url = 'https://hc.baktitimah.co.id/pegawaian/api/API_Lembur/insertLembur';
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestData),
+            });
+            console.log(requestData);
+
+            const contentType = response.headers.get('content-type');
+            if (response.ok && contentType && contentType.includes('application/json')) {
+                const result = await response.json();
+                // console.log('API Response:', result);
+
+                if (result.status === 'success') {
+                    Alert.alert(
+                        'Success',
+                        'Cuti berhasil diajukan',
+                        [
+                            {
+                                text: 'OK',
+                                onPress: () => {
+                                    navigation.navigate('HalamanRiwayat', { screen: 'RiwayatLembur' });
+                                },
+                            },
+                        ],
+                        { cancelable: false }
+                    );
+                } else {
+                    Alert.alert('Insert failed', result.message || 'Gagal mengajukan cuti');
+                }
+            } else {
+                const errorText = await response.text();
+                console.error('API Error:', errorText);
+                Alert.alert('Insert failed', 'Invalid response from server');
+            }
+        } catch (error) {
+            console.error('API Error:', error);
+            Alert.alert('An error occurred', 'Please try again later');
+        }
+    };
 
 
     const handleStartDateChange = (event, newDate) => {
         setShowStartDatePicker(false); // Hide after selection
         if (newDate !== undefined) {
             setStartDate(newDate);
-            setEndDate(addDays(newDate, selectedDuration));
         }
     };
 
@@ -43,15 +138,25 @@ function LemburScreen() {
     };
 
     const handleStartTimeChange = (event, selectedTime) => {
-        const currentTime = selectedTime || startTime;
         setShowStartTimePicker(false);
-        setStartTime(currentTime);
+        if (Platform.OS === 'android') {
+            const currentTime = selectedTime || startTime;
+            setStartTime(currentTime);
+        } else {
+            const currentTime = selectedTime || startTime;
+            setStartTime(currentTime);
+        }
     };
 
     const handleEndTimeChange = (event, selectedTime) => {
-        const currentTime = selectedTime || endTime;
         setShowEndTimePicker(false);
-        setEndTime(currentTime);
+        if (Platform.OS === 'android') {
+            const currentTime = selectedTime || endTime;
+            setEndTime(currentTime);
+        } else {
+            const currentTime = selectedTime || endTime;
+            setEndTime(currentTime);
+        }
     };
 
     const handleStartTimePress = () => {
@@ -70,27 +175,39 @@ function LemburScreen() {
             hour12: false, // Format 24 jam
         }).format(date);
     };
+    const handleChangeAlasan = (text) => {
+        setAlasan(text);
+    };
+
     return (
         <SafeAreaView style={{ backgroundColor: '#E7F4FE', flex: 1 }}>
             <ScrollView contentContainerStyle={styles.container}>
                 <View style={styles.card}>
-                    <View>
-                        <Text style={styles.text}>Nama Pekerja : </Text>
-                        <Inputan />
-                    </View>
-                    <View>
-                        <Text style={styles.text}>NIK : </Text>
-                        <Inputan />
-                    </View>
-                    <View>
-                        <Text style={styles.text}>Jabatan: </Text>
-                        <Inputan />
-                    </View>
+                    {userData && (
+                        <>
+                            <View>
+                                <Text style={styles.text}>Nama Pekerja:</Text>
+                                <Inputan value={userData.nama} />
+                            </View>
 
-                    <View>
-                        <Text style={styles.text}>Unit Kerja: </Text>
-                        <Inputan />
-                    </View>
+                            <View>
+                                <Text style={styles.text}>NIK : </Text>
+                                <Inputan value={userData.nik} />
+                            </View>
+                            <View>
+                                <Text style={styles.text}>Unit Level: </Text>
+                                <Inputan value={userData.nm_unit_level} />
+                            </View>
+                            <View>
+                                <Text style={styles.text}>Unit Kerja: </Text>
+                                <Inputan value={userData.nm_unit_organisasi} />
+                            </View>
+                            <View>
+                                <Text style={styles.text}>Sub Unit Kerja: </Text>
+                                <Inputan value={userData.nm_unit_kerja} />
+                            </View>
+                        </>
+                    )}
                     <View>
                         <Text style={styles.text}>Tanggal Lembur : </Text>
                         <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 10 }}>
@@ -134,7 +251,7 @@ function LemburScreen() {
                             maxHeight={300}
                             labelField="label"
                             valueField="value"
-                            placeholder={!isFocus ? 'Select item' : '...'}
+                            placeholder={!isFocus ? 'Pilih Waktu Lembur' : '...'}
                             searchPlaceholder="Search..."
                             value={value}
                             onFocus={() => setIsFocus(true)}
@@ -160,24 +277,24 @@ function LemburScreen() {
                                 <Text style={[{ fontWeight: 'bold' }]}>Mulai</Text>
                             </View>
                             <View style={styles.column}>
-                                <TextInput
+                            <TextInput
                                     style={[styles.input, { color: 'black' }]}
                                     value={formatTimeIndonesia(startTime)}
                                     editable={false}
                                 />
                             </View>
                             <View style={styles.column2}>
-                                <Pressable
+                            <Pressable
                                     style={({ pressed }) => [styles.buttonJam, pressed && styles.pressedButton]}
                                     onPress={handleStartTimePress}
                                 >
-                                    <AntDesign name="clockcircleo" size={24} color="white" />
+                                    <AntDesign name="clockcircleo" size={24} color="black" />
                                 </Pressable>
                                 {showStartTimePicker && (
                                     <DateTimePicker
                                         value={startTime}
                                         mode="time"
-                                        display="default"
+                                        display="spinner"
                                         onChange={handleStartTimeChange}
                                     />
                                 )}
@@ -199,17 +316,17 @@ function LemburScreen() {
                                 />
                             </View>
                             <View style={styles.column2}>
-                                <Pressable
+                            <Pressable
                                     style={({ pressed }) => [styles.buttonJam, pressed && styles.pressedButton]}
                                     onPress={handleEndTimePress}
                                 >
-                                    <AntDesign name="clockcircleo" size={24} color="white" />
+                                    <AntDesign name="clockcircleo" size={24} color="black" />
                                 </Pressable>
                                 {showEndTimePicker && (
                                     <DateTimePicker
                                         value={endTime}
                                         mode="time"
-                                        display="default"
+                                        display="spinner"
                                         onChange={handleEndTimeChange}
                                     />
                                 )}
@@ -220,7 +337,7 @@ function LemburScreen() {
                     </View>
                     <View>
                         <Text style={styles.text}>Uraian Tugas Lembur: </Text>
-                        <TextPanjang />
+                        <TextPanjang value={alasan} onChangeText={handleChangeAlasan} />
                     </View>
                     <View style={[{ marginTop: 20, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }]}>
                         <View style={[styles.column]}>
@@ -229,7 +346,7 @@ function LemburScreen() {
                         <View style={[styles.column]}>
                             <Pressable
                                 style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton,]}
-                                onPress={''}
+                                onPress={handlePengajuanLembur}
                             >
                                 <Text style={styles.textButton}>Ajukan</Text>
                             </Pressable>

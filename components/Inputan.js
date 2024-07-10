@@ -1,17 +1,19 @@
 import { View, Text, TextInput, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
 
-function Inputan({
-    
-}) {
+const Inputan = ({ value = '' }) => {
+    const [inputValue, setInputValue] = useState(value);
+
     return (
         <View>
             <TextInput
                 style={styles.input}
-                returnKeyType="next"
+                value={value}
+                editable={false} // Jika Anda ingin nilai tidak dapat diubah
             />
         </View>
     );
-}
+};
 
 export default Inputan;
 
@@ -39,6 +41,9 @@ const styles = StyleSheet.create({
         },
         shadowOpacity: 0.8,
         shadowRadius: 0.8,
+        color: 'black',
+        opacity: 0.7,
+        fontWeight: 'bold',
     },
 
 });

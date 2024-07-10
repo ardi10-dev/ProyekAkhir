@@ -1,43 +1,35 @@
-import React, { useState, useEffect, useFocusEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Pressable, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, Pressable, FlatList,  } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CardIzin from '../../components/CardIzin';
+import CardCuti from '../../components/CardCuti';
 import { ActivityIndicator } from 'react-native';
-import CardIzinApprove from '../../components/CardIzinApprove';
+import { useNavigation } from '@react-navigation/native';
 
 
-
-
-
-function AprovalIzin({ navigation }) {
+function RiwayatPCuti() {
+    const navigation = useNavigation();
 
     const [selectedYear, setSelectedYear] = useState('all');
     const [selectedMonth, setSelectedMonth] = useState('all');
     const [filteredData, setFilteredData] = useState([]);
-    const [riwayatIzin, setRiwayatIzin] = useState([]);
+    const [riwayatIzin, setRiwayatIzin] = useState([]); // Initialize as empty array
     const [loading, setLoading] = useState(true);
-    // const [userData, setUserData] = useState(null);
-
-
-
 
     const years = ['all', ...Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - 5 + i).toString())];
     const months = ['All', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
     useEffect(() => {
-
         const fetchRiwayatIzin = async () => {
             try {
                 const data = await AsyncStorage.getItem('userData');
-
                 if (data !== null) {
                     const userData = JSON.parse(data);
                     const idPegawai = userData.id_pegawai;
-                    // console.log(idPegawai);
 
-                    const apiUrl = `https://hc.baktitimah.co.id/pegawaian/api/API_Izin/getIzinApproval?id_pegawai=${idPegawai}`;
+                    const apiUrl = `https://hc.baktitimah.co.id/pegawaian/api/API_Cuti/getCuti?id_pegawai=${idPegawai}`;
                     const response = await fetch(apiUrl);
 
                     if (!response.ok) {
@@ -45,56 +37,20 @@ function AprovalIzin({ navigation }) {
                     }
 
                     const responseData = await response.json();
-                    const sortedData = responseData.data.sort((a, b) => parseDate(b[4]) - parseDate(a[4]));
-                    setRiwayatIzin(responseData.data);
+                    setRiwayatIzin(responseData.data); // Set data riwayat izin ke state
                     setFilteredData(responseData.data);
-                    setLoading(false);
+                    setLoading(false); // Stop loading indicator
                     // console.log(responseData.data);
                 }
             } catch (error) {
                 console.error('Error fetching riwayat izin:', error);
-                setLoading(false);
+                setLoading(false); // Stop loading indicator on error
             }
         };
 
         fetchRiwayatIzin();
     }, []);
-    useEffect(() => {
-        const fetchRiwayatIzin = async () => {
-            try {
-                const data = await AsyncStorage.getItem('userData');
 
-                if (data !== null) {
-                    const userData = JSON.parse(data);
-                    const idPegawai = userData.id_pegawai;
-                    // console.log(idPegawai);
-
-                    const apiUrl = `https://hc.baktitimah.co.id/pegawaian/api/API_Izin/getIzinApproval?id_pegawai=${idPegawai}`;
-                    const response = await fetch(apiUrl);
-
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-
-                    const responseData = await response.json();
-                    const sortedData = responseData.data.sort((a, b) => parseDate(b[4]) - parseDate(a[4]));
-                    setRiwayatIzin(responseData.data);
-                    setFilteredData(responseData.data);
-                    setLoading(false);
-                    // console.log(responseData.data);
-                }
-            } catch (error) {
-                console.error('Error fetching riwayat izin:', error);
-                setLoading(false);
-            }
-        };
-
-        const focusSubscription = navigation.addListener('focus', () => {
-            fetchRiwayatIzin();
-        });
-    
-        return focusSubscription;
-    },[navigation])
     const handleFilter = () => {
         if (!riwayatIzin.length) return;
 
@@ -120,22 +76,17 @@ function AprovalIzin({ navigation }) {
     };
 
     function renderRiwayatIzin({ item }) {
-        const Id_pegawai_izin = item[10] || '';
-        const nama = item[3] || '';
-        const nip = item[2] || '';
-        const ket = item[1] || '';
-        const jenisIzin = item[8] || '';
-        const tanggal = item[4] || '';
-        const tgl_mulai = item[6] || '';
-        const tgl_akhir = item[7] || '';
-
-        // console.log(Id_pegawai_izin);
-
+        const nama = item[3] || ''; 
+        const nip = item[2] || ''; 
+        const ket = item[1] || ''; 
+        const jenisIzin = item[8] || ''; 
+        const tanggal = item[4] || ''; 
+        const tgl_mulai = item[6] || ''; 
+        const tgl_akhir = item[7] || ''; 
 
         return (
-            <CardIzinApprove
-                key={item[0]}
-                Id_pegawai_izin={Id_pegawai_izin}
+            <CardCuti
+                key={item[0]} // Pastikan setiap item memiliki key yang unik
                 nama={nama}
                 nip={nip}
                 ket={ket}
@@ -206,7 +157,8 @@ function AprovalIzin({ navigation }) {
     );
 }
 
-export default AprovalIzin;
+export default RiwayatPCuti;
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -254,6 +206,4 @@ const styles = StyleSheet.create({
     pressedButton: {
         opacity: 0.7,
     },
-
-
 });

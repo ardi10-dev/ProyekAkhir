@@ -1,18 +1,10 @@
-import { View, Text, Image, StyleSheet, SafeAreaView, ScrollView, Pressable } from "react-native";
 import React, { useState, useEffect } from 'react';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { View, Text, StyleSheet, SafeAreaView, Pressable } from "react-native";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { NavigationContainer } from '@react-navigation/native';
 import NavBottom from "../../components/NavBottom";
-import ModalLogout from "../../components/ModalLogout";
-
-import DispensasiScreen from "../form/DispensasiScreen";
-
-
 
 function HalamanRiwayat() {
-
     const navigation = useNavigation();
 
     function buttonRiwayatAbsenHandler() {
@@ -21,7 +13,12 @@ function HalamanRiwayat() {
     function buttonRiwayatIzinHandler() {
         navigation.navigate('RiwayatIzin');
     }
-
+    function buttonRiwayatCutiHandler() {
+        navigation.navigate('RiwayatPCuti');
+    }
+    function buttonRiwayatLemburHandler() {
+        navigation.navigate('RiwayatLembur');
+    }
 
     const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -36,163 +33,96 @@ function HalamanRiwayat() {
     }, []);
 
     return (
-        <SafeAreaView style={[{ backgroundColor: '#E7F4FE', flex: 1, marginBottom: '10' }]}>
+        <SafeAreaView style={styles.container}>
             <View style={styles.mainContent}>
-                <View style={[{ marginRight: '20' }]} >
+                <View style={styles.buttonWrapper}>
                     <Pressable
-                        style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton,]}
+                        style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton]}
                         onPress={buttonRiwayatAbsenHandler}
                     >
-                        <View style={styles.tataContainer2}>
-                            <View style={[{ width: '90%' }]}  >
-                                <Text style={styles.textButton}>Riwayat Absensi </Text>
-                            </View>
-                            <View>
-                                <MaterialIcons name="navigate-next" size={30} color="white" />
-                            </View>
-
+                        <View style={styles.buttonContent}>
+                            <Text style={styles.textButton}>Riwayat Absen</Text>
+                            <MaterialIcons name="navigate-next" size={30} color="white" />
                         </View>
                     </Pressable>
                 </View>
-                <View style={[{ marginTop: '15' }]} >
+                <View style={styles.buttonWrapper}>
                     <Pressable
-                        style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton,]}
+                        style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton]}
                         onPress={buttonRiwayatIzinHandler}
                     >
-                        <View style={styles.tataContainer2}>
-                            <View style={[{ width: '90%' }]}  >
-                                <Text style={styles.textButton}>Riwayat Izin Dispensasi </Text>
-                            </View>
-                            <View >
-                                <MaterialIcons name="navigate-next" size={30} color="white" />
-                            </View>
-
+                        <View style={styles.buttonContent}>
+                            <Text style={styles.textButton}>Riwayat Izin</Text>
+                            <MaterialIcons name="navigate-next" size={30} color="white" />
                         </View>
                     </Pressable>
                 </View>
-                <View style={[{ marginTop: '15' }]} >
-                    <Pressable
-                        style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton,]}
+                <View style={styles.buttonWrapper}>
+                    <Pressable style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton]}
+                        onPress={buttonRiwayatCutiHandler}
                     >
-                        <View style={styles.tataContainer2}>
-                            <View style={[{ width: '90%' }]}  >
-                                <Text style={styles.textButton}>Riwayat Cuti </Text>
-                            </View>
-                            <View >
-                                <MaterialIcons name="navigate-next" size={30} color="white" />
-                            </View>
-
+                        <View style={styles.buttonContent}>
+                            <Text style={styles.textButton}>Riwayat Cuti Tahunan</Text>
+                            <MaterialIcons name="navigate-next" size={30} color="white" />
                         </View>
                     </Pressable>
                 </View>
-                <View style={[{ marginTop: '15' }]} >
-                    <Pressable
-                        style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton,]}
+                <View style={styles.buttonWrapper}>
+                    <Pressable style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton]}
+                        onPress={buttonRiwayatCutiHandler}
                     >
-                        <View style={styles.tataContainer2}>
-                            <View style={[{ width: '90%' }]}  >
-                                <Text style={styles.textButton}>Riwayat Lembur </Text>
-                            </View>
-                            <View >
-                                <MaterialIcons name="navigate-next" size={30} color="white" />
-                            </View>
-
+                        <View style={styles.buttonContent}>
+                            <Text style={styles.textButton}>Riwayat Lembur</Text>
+                            <MaterialIcons name="navigate-next" size={30} color="white" />
                         </View>
                     </Pressable>
                 </View>
             </View>
-
-            <NavBottom style={styles.posisiFixed} />
-            <ModalLogout visible={modalVisible} closeModal={closeModal} />
-
+            <NavBottom style={styles.navBottom} />
         </SafeAreaView>
     )
 }
 
 export default HalamanRiwayat;
+
 const styles = StyleSheet.create({
     container: {
-        justifyContent: 'center',
-        alignItems: 'center',
+        flex: 1,
+        backgroundColor: '#E7F4FE',
     },
-    appContainer: {
-        paddingTop: 40,
-        paddingHorizontal: 16,
+    mainContent: {
+        flex: 1,
+        paddingHorizontal: 20,
+        paddingTop: 10,
     },
-    tataContainer: {
-        flexDirection: 'row',
+    buttonWrapper: {
+        marginTop: 15,
     },
-    tataContainer2: {
-        flexDirection: 'row',
-        marginLeft: '10'
-
-    },
-    column: {
-        width: '40%',
-        height: 40,
-        margin: 5
-
-    },
-    column2: {
-        width: '40%',
-        height: 50,
-        marginLeft: 20,
-
-    },
-    image1: {
-        height: 40,
-        width: 40,
-    },
-    bold: {
-        fontWeight: 'bold',
-    },
-    rectangle: {
-        backgroundColor: 'white',
-        borderWidth: 0.5,
-        borderColor: 'gray',
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 1,
-        },
-        shadowOpacity: 0.22,
-        shadowRadius: 2.22,
-        elevation: 3,
-        borderColor: '#4C70C4'
-    },
-    centered: {
-        alignSelf: 'center',
-    },
-    textTengah: {
-        textAlign: 'center',
-    },
-
     buttonContainer: {
-        marginTop: 5,
         backgroundColor: '#008DDA',
         height: 50,
-        justifyContent: 'center'
+        justifyContent: 'center',
+        borderRadius: 8,
+        elevation: 2,
+    },
+    pressedButton: {
+        opacity: 0.75,
+    },
+    buttonContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 15,
     },
     textButton: {
         fontWeight: 'bold',
         color: 'white',
-        fontSize: 15,
-        margin: 5,
+        fontSize: 16,
     },
-    pressedButton: {
-        opacity: 0.25
-    },
-    posisiFixed: {
+    navBottom: {
         position: 'absolute',
         bottom: 0,
         left: 0,
-        right: 0
+        right: 0,
     },
-    mainContent: {
-        flex: 1,
-        // Gaya untuk konten utama
-      },
-
-
-
 });

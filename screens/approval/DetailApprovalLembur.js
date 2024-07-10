@@ -8,9 +8,7 @@ import TextPanjang from "../../components/TextPanjang";
 import { useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
-function DetailAprovalIzin({ route, navigation }) {
-
+function DetailApprovalLembur({ route, navigation }){
     const [dataDetail, setDataDetail] = useState();
     const userData = route.params && route.params.userData ? route.params.userData : {};
     const [alasan, setAlasan] = useState('');
@@ -33,14 +31,14 @@ function DetailAprovalIzin({ route, navigation }) {
     // };
     const fetchData = async () => {
         try {
-            const id_pegawai_izin = route.params.id;
-            // console.log(id_pegawai_izin);
-            const response = await fetch('https://hc.baktitimah.co.id/pegawaian/api/API_Izin/getDetailIzinApproval', {
+            const id_pegawai_lembur_req = route.params.id;
+            console.log(id_pegawai_lembur_req);
+            const response = await fetch('https://hc.baktitimah.co.id/pegawaian/api/API_Lembur/getDetailLemburApproval', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded', // Perhatikan perubahan di sini
                 },
-                body: `id_pegawai_izin=${encodeURIComponent(id_pegawai_izin)}` // Dan di sini
+                body: `id_pegawai_lembur_req=${encodeURIComponent(id_pegawai_lembur_req)}` // Dan di sini
             });
 
             if (!response.ok) {
@@ -49,7 +47,7 @@ function DetailAprovalIzin({ route, navigation }) {
 
             const data = await response.json();
             setDataDetail(data.data);
-            // console.log(dataDetail);
+            // console.log(setDataDetail);
         } catch (err) {
             console.log(err);
         }
@@ -64,9 +62,9 @@ function DetailAprovalIzin({ route, navigation }) {
         try {
             const data = await AsyncStorage.getItem('userData');
             const userData = JSON.parse(data);
-            const id_pegawai_izin = route.params.id;
+            const id_pegawai_lembur_req = route.params.id;
 
-            if (!id_pegawai_izin) {
+            if (!id_pegawai_lembur_req) {
                 throw new Error('id_pegawai_izin is missing');
             }
 
@@ -76,7 +74,7 @@ function DetailAprovalIzin({ route, navigation }) {
             }
 
             const formData = new FormData();
-            formData.append('id_pegawai_izin', id_pegawai_izin);
+            formData.append('id_pegawai_lembur_req', id_pegawai_lembur_req);
             formData.append('id_pegawai', dataDetail[0]?.id_pegawai);
             formData.append('status', '1');
             formData.append('id_pegawai_app', userData.id_pegawai);
@@ -92,7 +90,7 @@ function DetailAprovalIzin({ route, navigation }) {
             // };
             console.log('requesy', formData);
 
-            const url = 'https://hc.baktitimah.co.id/pegawaian/api/API_Izin/approveIzin';
+            const url = 'https://hc.baktitimah.co.id/pegawaian/api/API_Lembur/approveLembur';
 
             const response = await fetch(url, {
                 method: 'POST',
@@ -113,14 +111,14 @@ function DetailAprovalIzin({ route, navigation }) {
                             {
                                 text: 'OK',
                                 onPress: () => {
-                                    navigation.navigate('AprovalIzin');
+                                    navigation.navigate('ApprovalLembur');
                                 },
                             },
                         ],
                         { cancelable: false }
                     );
                 } else {
-                    Alert.alert('Insert failed', result.message || 'Gagal mengajukan cuti');
+                    Alert.alert('Insert failed', result.message || 'Gagal Approve cuti');
                 }
             } else {
                 const errorText = await response.text();
@@ -137,9 +135,9 @@ function DetailAprovalIzin({ route, navigation }) {
         try {
             const data = await AsyncStorage.getItem('userData');
             const userData = JSON.parse(data);
-            const id_pegawai_izin = route.params.id;
+            const id_pegawai_lembur_req = route.params.id;
 
-            if (!id_pegawai_izin) {
+            if (!id_pegawai_lembur_req) {
                 throw new Error('id_pegawai_izin is missing');
             }
 
@@ -149,7 +147,7 @@ function DetailAprovalIzin({ route, navigation }) {
             }
 
             const formData = new FormData();
-            formData.append('id_pegawai_izin', id_pegawai_izin);
+            formData.append('id_pegawai_lembur_req', id_pegawai_lembur_req);
             formData.append('id_pegawai', dataDetail[0]?.id_pegawai);
             formData.append('status', '2');
             formData.append('id_pegawai_app', userData.id_pegawai);
@@ -165,7 +163,7 @@ function DetailAprovalIzin({ route, navigation }) {
             // };
             console.log('requesy', formData);
 
-            const url = 'https://hc.baktitimah.co.id/pegawaian/api/API_Izin/approveIzin';
+            const url = 'https://hc.baktitimah.co.id/pegawaian/api/API_Lembur/approveLembur';
 
             const response = await fetch(url, {
                 method: 'POST',
@@ -186,7 +184,7 @@ function DetailAprovalIzin({ route, navigation }) {
                             {
                                 text: 'OK',
                                 onPress: () => {
-                                    navigation.navigate('AprovalIzin');
+                                    navigation.navigate('AprovalLembur');
                                 },
                             },
                         ],
@@ -227,29 +225,33 @@ function DetailAprovalIzin({ route, navigation }) {
                                 <Inputan value={dataDetail[0]?.nik || ''} />
                             </View>
                             <View>
-                                <Text style={styles.text}>Tanggal Mulai : </Text>
-                                <Inputan value={dataDetail[0]?.tgl_mulai || ''} />
+                                <Text style={styles.text}>Tanggal Pengajuan : </Text>
+                                <Inputan value={dataDetail[0]?.tgl_pengajuan || ''} />
                             </View>
                             <View>
-                                <Text style={styles.text}>Tanggal Akhir : </Text>
-                                <Inputan value={dataDetail[0]?.tgl_akhir || ''} />
+                                <Text style={styles.text}>Tanggal Lembur : </Text>
+                                <Inputan value={dataDetail[0]?.tgl_lembur || ''} />
                             </View>
                             <View>
-                                <Text style={styles.text}>Jenis Izin : </Text>
-                                <Inputan value={dataDetail[0]?.jenis_izin || ''} />
+                                <Text style={styles.text}>Jam Mulai : </Text>
+                                <Inputan value={dataDetail[0]?.waktu_mulai || ''} />
                             </View>
                             <View>
-                                <Text style={styles.text}>Lama Izin : </Text>
-                                <Inputan value={dataDetail[0]?.lama || ''} />
+                                <Text style={styles.text}>Sampai Jam : </Text>
+                                <Inputan value={dataDetail[0]?.waktu_akhir || ''} />
                             </View>
                             <View>
-                                <Text style={styles.text}>Alasan Izin: </Text>
+                                <Text style={styles.text}>Dikerjakan Pada Saat : </Text>
+                                <Inputan value={dataDetail[0]?.jenis_lembur || ''} />
+                            </View>
+                            <View>
+                                <Text style={styles.text}>Dikerjakan Saat : </Text>
                                 <TextPanjang value={dataDetail[0]?.keterangan || ''} onChangeText={handleChangeAlasan} />
                             </View>
                         </>
                     )}
                     <View>
-                        <Text style={styles.text}>Catatan Dari Approve: </Text>
+                        <Text style={styles.text}>Catatan Dari Approve:: </Text>
                         <TextPanjang value={alasan} onChangeText={handleChangeAlasan} />
                     </View>
 
@@ -280,8 +282,7 @@ function DetailAprovalIzin({ route, navigation }) {
     );
 }
 
-export default DetailAprovalIzin;
-
+export default DetailApprovalLembur;
 const styles = StyleSheet.create({
     container: {
         flexGrow: 1,

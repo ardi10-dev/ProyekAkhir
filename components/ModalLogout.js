@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Modal, Pressable, StyleSheet } from 'react-native';
+import { CommonActions } from '@react-navigation/native';
 
 function ModalLogout({ visible, closeModal, logoutHandler }) {
     return (

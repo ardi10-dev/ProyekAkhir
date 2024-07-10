@@ -1,7 +1,7 @@
 import { View, Text, Image, StyleSheet, SafeAreaView, ScrollView, Pressable } from "react-native";
 import React, { useState, useEffect } from 'react';
 
-function CardIzin({ nama, nip, ket, jenisIzin, tanggal }) {
+function CardLembur({ nama, nip, ket, jenisIzin, tanggal, waktu_mulai, waktu_akhir, tgl_lembur }) {
 
     const ketStyle = (ket) => {
         switch (ket) {
@@ -21,22 +21,40 @@ function CardIzin({ nama, nip, ket, jenisIzin, tanggal }) {
             <View style={styles.rectangle}>
                 <View style={styles.rowContainer}>
                     <View style={styles.leftColumn}>
+                        <Text style={styles.label}>Tanggal Pengajuan:</Text>
+                    </View>
+                    <View style={styles.rightColumn}>
+                        <Text style={styles.label}>{tanggal}</Text>
+                    </View>
+                    
+                </View>
+                <View style={styles.rowContainer}>
+                    <View style={styles.leftColumn}>
+                        <Text style={styles.label}>Tanggal Lembur:</Text>
+                    </View>
+                    <View style={styles.rightColumn}>
+                        <Text style={styles.label}>{tgl_lembur}</Text>
+                    </View>
+                </View>
+                
+                <View style={[styles.rowContainer,{marginTop:9,}]}>
+                    <View style={styles.leftColumn}>
+                        <Text style={styles.label}>Waktu Mulai:</Text>
+                        <Text style={styles.value}>{waktu_mulai}</Text>
+                    </View>
+                    <View style={styles.rightColumn}>
+                        <Text style={styles.label}>Waktu Akhir:</Text>
+                        <Text style={styles.value}>{waktu_akhir}</Text>
+                    </View>
+                </View>
+                {/* <View style={[styles.rowContainer,{marginTop:10,}]}>
+                    <View style={styles.leftColumn}>
                         <Text style={styles.label}>Tanggal:</Text>
                     </View>
                     <View style={styles.rightColumn}>
                         <Text style={styles.label}>{tanggal}</Text>
                     </View>
-                </View>
-                <View style={styles.rowContainer}>
-                    <View style={styles.leftColumn}>
-                        <Text style={styles.label}>Nama:</Text>
-                        <Text style={styles.value}>{nama}</Text>
-                    </View>
-                    <View style={styles.rightColumn}>
-                        <Text style={styles.label}>NIP:</Text>
-                        <Text style={styles.value}>{nip}</Text>
-                    </View>
-                </View>
+                </View> */}
                 <View style={styles.rowContainer}>
                     <View style={styles.leftColumn}>
                         <Text style={[styles.label, { marginTop: 10 }]}>Keterangan:</Text>
@@ -45,17 +63,18 @@ function CardIzin({ nama, nip, ket, jenisIzin, tanggal }) {
                         </View>
                     </View>
                     <View style={styles.rightColumn}>
-                        <Text style={[styles.label, { marginTop: 10 }]}>Jenis Izin:</Text>
+                        <Text style={[styles.label, { marginTop: 10 }]}>Jenis Cuti:</Text>
                         <Text style={styles.textTengah}>{jenisIzin}</Text>
                     </View>
                 </View>
+                
             </View>
         </View>
     )
 }
 
 
-export default CardIzin;
+export default CardLembur;
 
 const styles = StyleSheet.create({
     container: {

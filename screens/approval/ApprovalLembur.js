@@ -6,17 +6,17 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import CardIzin from '../../components/CardIzin';
 import { ActivityIndicator } from 'react-native';
 import CardIzinApprove from '../../components/CardIzinApprove';
+import CardCutiApprove from '../../components/CardCutiApprove';
+import CardAppLembur from '../../components/CardAppLembur';
 
 
 
-
-
-function AprovalIzin({ navigation }) {
+function ApprovalLembur({ route, navigation }) {
 
     const [selectedYear, setSelectedYear] = useState('all');
     const [selectedMonth, setSelectedMonth] = useState('all');
     const [filteredData, setFilteredData] = useState([]);
-    const [riwayatIzin, setRiwayatIzin] = useState([]);
+    const [riwayatAppCuti, setRiwayatAppCuti] = useState([]);
     const [loading, setLoading] = useState(true);
     // const [userData, setUserData] = useState(null);
 
@@ -26,9 +26,9 @@ function AprovalIzin({ navigation }) {
     const years = ['all', ...Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - 5 + i).toString())];
     const months = ['All', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
-    useEffect(() => {
 
-        const fetchRiwayatIzin = async () => {
+    useEffect(() => {
+        const fetchRiwayatAppCuti = async () => {
             try {
                 const data = await AsyncStorage.getItem('userData');
 
@@ -37,48 +37,20 @@ function AprovalIzin({ navigation }) {
                     const idPegawai = userData.id_pegawai;
                     // console.log(idPegawai);
 
-                    const apiUrl = `https://hc.baktitimah.co.id/pegawaian/api/API_Izin/getIzinApproval?id_pegawai=${idPegawai}`;
-                    const response = await fetch(apiUrl);
-
+                    const response = await fetch('https://hc.baktitimah.co.id/pegawaian/api/API_Lembur/getLemburApproval', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded', // Perhatikan perubahan di sini
+                        },
+                        body: `id_pegawai=${idPegawai}` 
+                    });
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
                     }
 
                     const responseData = await response.json();
                     const sortedData = responseData.data.sort((a, b) => parseDate(b[4]) - parseDate(a[4]));
-                    setRiwayatIzin(responseData.data);
-                    setFilteredData(responseData.data);
-                    setLoading(false);
-                    // console.log(responseData.data);
-                }
-            } catch (error) {
-                console.error('Error fetching riwayat izin:', error);
-                setLoading(false);
-            }
-        };
-
-        fetchRiwayatIzin();
-    }, []);
-    useEffect(() => {
-        const fetchRiwayatIzin = async () => {
-            try {
-                const data = await AsyncStorage.getItem('userData');
-
-                if (data !== null) {
-                    const userData = JSON.parse(data);
-                    const idPegawai = userData.id_pegawai;
-                    // console.log(idPegawai);
-
-                    const apiUrl = `https://hc.baktitimah.co.id/pegawaian/api/API_Izin/getIzinApproval?id_pegawai=${idPegawai}`;
-                    const response = await fetch(apiUrl);
-
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-
-                    const responseData = await response.json();
-                    const sortedData = responseData.data.sort((a, b) => parseDate(b[4]) - parseDate(a[4]));
-                    setRiwayatIzin(responseData.data);
+                    setRiwayatAppCuti(responseData.data);
                     setFilteredData(responseData.data);
                     setLoading(false);
                     // console.log(responseData.data);
@@ -90,15 +62,17 @@ function AprovalIzin({ navigation }) {
         };
 
         const focusSubscription = navigation.addListener('focus', () => {
-            fetchRiwayatIzin();
+            fetchRiwayatAppCuti();
         });
-    
-        return focusSubscription;
-    },[navigation])
-    const handleFilter = () => {
-        if (!riwayatIzin.length) return;
 
-        const filtered = riwayatIzin.filter(item => {
+        return focusSubscription;
+    }, [navigation])
+
+
+    const handleFilter = () => {
+        if (!riwayatAppCuti.length) return;
+
+        const filtered = riwayatAppCuti.filter(item => {
             const itemDate = parseDate(item[4]);
             const yearMatch = selectedYear === 'all' || itemDate.getFullYear().toString() === selectedYear;
             const monthMatch = selectedMonth === 'all' || (itemDate.getMonth() + 1).toString() === selectedMonth;
@@ -120,26 +94,26 @@ function AprovalIzin({ navigation }) {
     };
 
     function renderRiwayatIzin({ item }) {
-        const Id_pegawai_izin = item[10] || '';
+        const id_pegawai_lembur_req = item[9] || '';
         const nama = item[3] || '';
         const nip = item[2] || '';
         const ket = item[1] || '';
-        const jenisIzin = item[8] || '';
+        const keterangan = item[8] || '';
         const tanggal = item[4] || '';
         const tgl_mulai = item[6] || '';
         const tgl_akhir = item[7] || '';
 
-        // console.log(Id_pegawai_izin);
+        // console.log(id_pegawai_lembur_req);
 
 
         return (
-            <CardIzinApprove
+            <CardAppLembur
                 key={item[0]}
-                Id_pegawai_izin={Id_pegawai_izin}
+                id_pegawai_lembur_req={id_pegawai_lembur_req}
                 nama={nama}
                 nip={nip}
                 ket={ket}
-                jenisIzin={jenisIzin}
+                keterangan={keterangan}
                 tanggal={tanggal}
                 tgl_mulai={tgl_mulai}
                 tgl_akhir={tgl_akhir}
@@ -206,7 +180,7 @@ function AprovalIzin({ navigation }) {
     );
 }
 
-export default AprovalIzin;
+export default ApprovalLembur;
 const styles = StyleSheet.create({
     container: {
         flex: 1,

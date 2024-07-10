@@ -1,8 +1,9 @@
+import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet } from 'react-native';
 
-function TextPanjang({
 
-}) {
+const TextPanjang = ({ value, onChangeText }) => {
+
     return (
         <View>
             <TextInput
@@ -10,6 +11,8 @@ function TextPanjang({
                 multiline={true}
                 numberOfLines={4}
                 textAlignVertical="top"
+                value={value}
+                onChangeText={onChangeText}
             />
         </View>
     );

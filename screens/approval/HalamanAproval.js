@@ -1,20 +1,21 @@
-import { View, Text, Image, StyleSheet, SafeAreaView, ScrollView, Pressable } from "react-native";
+import { View, Text, SafeAreaView, Pressable, StyleSheet } from "react-native";
 import React, { useState, useEffect } from 'react';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { NavigationContainer } from '@react-navigation/native';
 import NavBottom from "../../components/NavBottom";
-
 
 function HalamanAproval() {
     const navigation = useNavigation();
 
-
     function buttonAprovalIzinHandler() {
         navigation.navigate('AprovalIzin');
     }
-
+    function buttonAprovalCutiHandler() {
+        navigation.navigate('ApprovalCuti');
+    }
+    function buttonAprovalLemburHandler() {
+        navigation.navigate('ApprovalLembur');
+    }
 
     const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -29,143 +30,83 @@ function HalamanAproval() {
     }, []);
 
     return (
-        <SafeAreaView style={[{ backgroundColor: '#E7F4FE', flex: 1, marginBottom: '10' }]}>
+        <SafeAreaView style={styles.container}>
             <View style={styles.mainContent}>
-                <View style={[{ marginRight: '20' }]} >
+                <View style={styles.buttonWrapper}>
                     <Pressable
-                        style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton,]}
+                        style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton]}
                         onPress={buttonAprovalIzinHandler}
                     >
-                        <View style={styles.tataContainer2}>
-                            <View style={[{ width: '90%' }]}  >
-                                <Text style={styles.textButton}>Aproval Izin </Text>
-                            </View>
-                            <View>
-                                <MaterialIcons name="navigate-next" size={30} color="white" />
-                            </View>
-
+                        <View style={styles.buttonContent}>
+                            <Text style={styles.textButton}>Aproval Izin</Text>
+                            <MaterialIcons name="navigate-next" size={30} color="white" />
                         </View>
                     </Pressable>
                 </View>
-                <View style={[{ marginTop: '15' }]} >
-                    <Pressable
-                        style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton,]}
-                    >
-                        <View style={styles.tataContainer2}>
-                            <View style={[{ width: '90%' }]}  >
-                                <Text style={styles.textButton}>Aproval Cuti </Text>
-                            </View>
-                            <View >
-                                <MaterialIcons name="navigate-next" size={30} color="white" />
-                            </View>
+                <View style={styles.buttonWrapper}>
+                    <Pressable style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton]}
+                        onPress={buttonAprovalCutiHandler}>
+                        <View style={styles.buttonContent}>
+                            <Text style={styles.textButton}>Aproval Cuti</Text>
+                            <MaterialIcons name="navigate-next" size={30} color="white" />
                         </View>
                     </Pressable>
                 </View>
-                <View style={[{ marginTop: '15' }]} >
-                    <Pressable
-                        style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton,]}
-                    >
-                        <View style={styles.tataContainer2}>
-                            <View style={[{ width: '90%' }]}  >
-                                <Text style={styles.textButton}>Aproval Lembur</Text>
-                            </View>
-                            <View >
-                                <MaterialIcons name="navigate-next" size={30} color="white" />
-                            </View>
-
+                <View style={styles.buttonWrapper}>
+                    <Pressable style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton]}
+                        onPress={buttonAprovalLemburHandler}>
+                        <View style={styles.buttonContent}>
+                            <Text style={styles.textButton}>Aproval Lembur</Text>
+                            <MaterialIcons name="navigate-next" size={30} color="white" />
                         </View>
                     </Pressable>
                 </View>
             </View>
-            <NavBottom style={styles.posisiFixed} />
-
+            <NavBottom style={styles.navBottom} />
         </SafeAreaView>
-    )
+    );
 }
 
 export default HalamanAproval;
+
 const styles = StyleSheet.create({
     container: {
-        justifyContent: 'center',
-        alignItems: 'center',
+        flex: 1,
+        backgroundColor: '#E7F4FE',
     },
-    appContainer: {
-        paddingTop: 40,
-        paddingHorizontal: 16,
+    mainContent: {
+        flex: 1,
+        paddingHorizontal: 20,
+        paddingTop: 10,
     },
-    tataContainer: {
-        flexDirection: 'row',
+    buttonWrapper: {
+        marginTop: 15,
     },
-    tataContainer2: {
-        flexDirection: 'row',
-        marginLeft: '10'
-
-    },
-    column: {
-        width: '40%',
-        height: 40,
-        margin: 5
-
-    },
-    column2: {
-        width: '40%',
-        height: 50,
-        marginLeft: 20,
-
-    },
-    image1: {
-        height: 40,
-        width: 40,
-    },
-    bold: {
-        fontWeight: 'bold',
-    },
-    rectangle: {
-        backgroundColor: 'white',
-        borderWidth: 0.5,
-        borderColor: 'gray',
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 1,
-        },
-        shadowOpacity: 0.22,
-        shadowRadius: 2.22,
-        elevation: 3,
-        borderColor: '#4C70C4'
-    },
-    centered: {
-        alignSelf: 'center',
-    },
-    textTengah: {
-        textAlign: 'center',
-    },
-
     buttonContainer: {
-        marginTop: 5,
         backgroundColor: '#008DDA',
         height: 50,
-        justifyContent: 'center'
+        justifyContent: 'center',
+        borderRadius: 8,
+        elevation: 2,
+    },
+    pressedButton: {
+        opacity: 0.75,
+    },
+    buttonContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 15,
     },
     textButton: {
         fontWeight: 'bold',
         color: 'white',
-        fontSize: 15,
-        margin: 5,
+        fontSize: 16,
     },
-    pressedButton: {
-        opacity: 0.25
-    },
-    mainContent: {
-        flex: 1,
-        // Gaya untuk konten utama
-      },posisiFixed: {
+    navBottom: {
         position: 'absolute',
         bottom: 0,
         left: 0,
-        right: 0
+        right: 0,
     },
-
-
-
 });

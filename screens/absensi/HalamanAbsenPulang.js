@@ -1,6 +1,6 @@
 import { View, Text, Image, StyleSheet, SafeAreaView, ScrollView, Pressable, Alert } from "react-native";
 import React, { useState, useEffect } from 'react';
-import { useRoute , useNavigation } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { Dropdown } from 'react-native-element-dropdown';
@@ -10,22 +10,15 @@ import LokasiPengguna from "./LokasiPengguna";
 import ModalAbsen from "../../components/ModalAbsen";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-function HalamanAbsensi() {
-    const navigation = useNavigation();
-    const navigate = (route) => navigation.navigate(route);
-    const route = useRoute();
 
-    const [value, setValue] = useState(null);
-    const [isFocus, setIsFocus] = useState(false);
+function HalamanAbsenPulang({ navigation }) {
+
+    const route = useRoute();
+    const [pickedImage, setPickedImage] = useState(null);
+    const { latitude, longitude } = route.params;
     const [modalVisible, setModalVisible] = useState(false);
     const [userData, setUserData] = useState(null);
-    const [jamKerja, setJamKerja] = useState([]);
     const [currentTime, setCurrentTime] = useState(new Date());
-    const [pickedImage, setPickedImage] = useState(null);
-    const [pengaturanAbsen, setPengaturanAbsen] = useState(null);
-    const { latitude, longitude } = route.params;
-    const [valueShiftMasuk, setValueShiftMasuk] = useState();
-    const [valueShiftKeluar, setValueShiftKeluar] = useState();
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -38,85 +31,29 @@ function HalamanAbsensi() {
             }
         };
 
-        const fetchShiftData = async () => {
-            try {
-                const apiUrl = `https://hc.baktitimah.co.id/pegawaian/api/API_Absen/shift`;
-                const response = await fetch(apiUrl);
-
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-
-                const responseData = await response.json();
-                // console.log('Shift Data Response:', responseData); 
-
-                if (!responseData || !responseData.data || !Array.isArray(responseData.data)) {
-                    throw new Error('Invalid data format received');
-                }
-
-                const formattedData = responseData.data.map(item => ({
-                    label: item.nama_shift,
-                    value: item.id_shift
-                }));
-                setJamKerja(formattedData);
-            } catch (error) {
-                console.error('Error fetching shift data:', error);
-                Alert.alert('Error', 'Gagal mengambil data jam kerja.');
-            }
-        };
-
         fetchUserData();
-        fetchShiftData();
-
     }, []);
-    async function valueshift(idshift) {
+
+    const handleAbsenPulangSubmit = async () => {
         try {
-            const response = await fetch('https://hc.baktitimah.co.id/pegawaian/api/API_Absen/shift', {
-                method: 'GET'
-            });
-            const data = await response.json();
-            // console.log(data.data);
-    
-            for (const item of data.data) {
-                if (item.id_shift === idshift) {
-                    await AsyncStorage.setItem('jam_masuk', item.waktu_masuk);
-                    await AsyncStorage.setItem('jam_keluar', item.waktu_keluar);
-                }
-            }
-        } catch (err) {
-            console.log(err);
-        }
-    }
-    
-    const handleAbsensiSubmit = async () => {
-        try {
-            if (!value) {
-                throw new Error('Jam Kerja Harus Dipilih.');
-            }
+
             if (!pickedImage) {
                 throw new Error('Wajib Mengupload Foto');
             }
 
-            valueshift(value);
             const formData = new FormData();
             formData.append('photo', {
                 uri: pickedImage,
                 type: 'image/jpeg',
                 name: 'photo.jpg'
             });
-            // console.log('Picked Image URI:', pickedImage);
-
-            formData.append('nm_unit_usaha', userData.nm_unit_usaha);
             formData.append('id_pegawai', userData.id_pegawai);
             formData.append('tgl_absen', new Date().toISOString().split('T')[0]);
-            formData.append('id_shift', value);
-            formData.append('waktu_masuk', new Date().toLocaleTimeString('en-US', { hour12: false }));
-            formData.append('longitude', longitude.toString()); 
-            formData.append('latitude', latitude.toString());  
+            formData.append('waktu_keluar', new Date().toLocaleTimeString('en-US', { hour12: false }));
+            formData.append('longitude', longitude.toString());
+            formData.append('latitude', latitude.toString());
 
-            console.log("FormData content:", formData);
-
-            const apiUrl = 'https://hc.baktitimah.co.id/pegawaian/api/API_Absen/fotoMasuk';
+            const apiUrl = 'https://hc.baktitimah.co.id/pegawaian/api/API_Absen/fotoKeluar';
             const response = await fetch(apiUrl, {
                 method: 'POST',
                 body: formData,
@@ -128,37 +65,28 @@ function HalamanAbsensi() {
             }
 
             const responseData = await response.json();
-            console.log(responseData);
-            setModalVisible(true); 
+            // console.log(responseData);
+            await AsyncStorage.removeItem('jam_masuk');
+            await AsyncStorage.removeItem('jam_keluar');
+
+            setModalVisible(true);
         } catch (error) {
             // console.error('Error submitting absensi:', error);
             Alert.alert('Peringatan!!', error.message);
         }
     };
 
+
+
     const closeModal = () => {
         setModalVisible(false);
         navigation.navigate('RiwayatAbsen');
     };
 
-
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrentTime(new Date());
-        }, 1000);
-
-        return () => {
-            clearInterval(timer);
-        };
-    }, []);
-
     const handleImageTaken = (imageUri) => {
         console.log('Image URI received:', imageUri);
         setPickedImage(imageUri);
     };
-
-    
-
 
 
     return (
@@ -188,31 +116,6 @@ function HalamanAbsensi() {
                     <Text >Jl. Umban Sari</Text>
                 </View>
 
-                <View style={styles.ket}>
-                    <Text style={[{ fontWeight: 'bold' }]}>Pilih jam Kerja</Text>
-                    <Dropdown
-                        style={[styles.input, isFocus && { borderColor: 'blue' }, styles.dropdown]}
-                        placeholderStyle={styles.placeholderStyle}
-                        selectedTextStyle={styles.selectedTextStyle}
-                        inputSearchStyle={styles.inputSearchStyle}
-                        iconStyle={styles.iconStyle}
-                        data={jamKerja}
-                        search={false}
-                        maxHeight={300}
-                        labelField="label"
-                        valueField="value"
-                        placeholder={!isFocus ? 'Select item' : '...'}
-                        searchPlaceholder="Search..."
-                        value={value}
-                        onFocus={() => setIsFocus(true)}
-                        onBlur={() => setIsFocus(false)}
-                        onChange={item => {
-                            setValue(item.value);
-                            setIsFocus(false);
-                        }}
-                        renderLeftIcon={() => <AntDesign style={styles.icon} name="Safety" size={20} />}
-                    />
-                </View>
 
                 <View style={styles.photo}>
                     <HalamanGambar onImageTaken={handleImageTaken} />
@@ -221,7 +124,7 @@ function HalamanAbsensi() {
                 <View >
                     <Pressable
                         style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton,]}
-                        onPress={handleAbsensiSubmit}>
+                        onPress={handleAbsenPulangSubmit}>
                         <Text style={styles.textButton}>Submit</Text>
                     </Pressable>
                 </View>
@@ -231,7 +134,8 @@ function HalamanAbsensi() {
         </SafeAreaView>
     );
 }
-export default HalamanAbsensi;
+
+export default HalamanAbsenPulang;
 const styles = StyleSheet.create({
     container: {
         flexGrow: 1,

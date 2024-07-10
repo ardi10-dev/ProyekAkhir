@@ -1,46 +1,68 @@
-import React, { useState } from 'react';
-import { View, Text, Image, StyleSheet, SafeAreaView, ScrollView, Pressable, Platform } from "react-native";
+import React, { useState, useEffect } from 'react';
+import { View, Text, Image, StyleSheet, SafeAreaView, ScrollView, Pressable, Platform, BackHandler } from "react-native";
 import { AntDesign } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CommonActions } from "@react-navigation/native";
 import { Animated } from 'react-native';
 import ModalLogout from './ModalLogout';
+import { MaterialIcons } from '@expo/vector-icons';
 
 
 function NavBottom() {
     const navigation = useNavigation();
-    const [showAlert, setShowAlert] = useState(false);
     const [isModalVisible, setModalVisible] = useState(false);
 
     const toggleModal = () => {
         setModalVisible(!isModalVisible);
     };
 
-    function buttonBeranda() {
+    const buttonBeranda = () => {
         navigation.navigate('HalamanUtama');
-    }
-    function buttonAbsensiHandler() {
-        navigation.navigate('MenuAbsensi');
+    };
 
-    }
-    async function buttonLogOutHandler() {
-        toggleModal(); // Menampilkan modal konfirmasi
+    const buttonAbsensiHandler = () => {
+        navigation.navigate('RiwayatStackScreen', { screen: 'HalamanRiwayat' });
+    };
 
+    const buttonLogOutHandler = () => {
+        toggleModal();
+    };
 
-    }
-    async function buttonLogOut2Handler() {
-        
+    const buttonLogOut2Handler = async () => {
+        try {
+            await AsyncStorage.removeItem('userData');
+            navigation.dispatch(
+                CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: 'Login' }],
+                })
+            );
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
-        // Reset navigasi ke halaman login
-        navigation.dispatch(
-            CommonActions.reset({
-                index: 0,
-                routes: [{ name: 'Login' }],
-            })
+    useEffect(() => {
+        const backAction = () => {
+            Alert.alert("Hold on!", "Are you sure you want to log out?", [
+                {
+                    text: "Cancel",
+                    onPress: () => null,
+                    style: "cancel"
+                },
+                { text: "YES", onPress: buttonLogOut2Handler }
+            ]);
+            return true;
+        };
+
+        const backHandler = BackHandler.addEventListener(
+            "hardwareBackPress",
+            backAction
         );
-    }
 
+        return () => backHandler.remove();
+    }, [navigation]);
 
     return (
         <View style={[styles.container]}>
@@ -59,14 +81,15 @@ function NavBottom() {
                         <View style={[styles.column2]}>
                             <Pressable
                                 style={({ pressed }) => [styles.gridItem2, {
-                                    backgroundColor: pressed ? '#white' : '#4C70C4', // Ubah warna tombol saat ditekan
+                                    backgroundColor: pressed ? '#white' : '#4C70C4', 
                                 }, pressed && styles.pressedButton]}
                                 onPress={buttonAbsensiHandler}
                             >
-                                <AntDesign name="clockcircleo" size={35} color="white" />
+                                {/* <AntDesign name="clockcircleo" size={35} color="white" /> */}
+                                <MaterialIcons name="work-history" size={35} color="white" />
 
                             </Pressable>
-                            <Text style={[styles.textTengah, { marginTop: 6, }]}>Absensi</Text>
+                            <Text style={[styles.textTengah, { marginTop: 6, }]}>Riwayat</Text>
                         </View>
                         <View style={[styles.column]}>
                             <Pressable
@@ -106,7 +129,7 @@ const styles = StyleSheet.create({
     rectangle: {
         backgroundColor: '#E7F4FE',
         height: 60,
-        borderWidth: 0.2,
+        borderWidth: 0.5,
         borderRadius: 10,
         borderColor: 'gray',
         shadowColor: "#000",

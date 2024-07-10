@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, SafeAreaView, ScrollView, Pressable, StyleSheet, Button, TextInput, Platform } from "react-native";
+import { View, Text, SafeAreaView, ScrollView, Pressable, StyleSheet, Alert, TextInput, KeyboardAvoidingView, Platform } from "react-native";
 import Inputan from "../../components/Inputan";
 import { Dropdown } from 'react-native-element-dropdown';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import TextPanjang from "../../components/TextPanjang";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ActivityIndicator } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+
 
 function DispensasiScreen() {
-    const data = [
-        { label: 'Cuti Sakit/Haid', value: '1', duration: 3 },
-        { label: 'Cuti Bersalin / Keguguran', value: '2', duration: 3 },
-        { label: 'Dispensasi', value: '3', duration: 3 },
-        { label: 'Cuti Ibadah Keagamaan', value: '4', duration: 3 },
-    ];
+    const navigation = useNavigation();
+
+
     const [value, setValue] = useState(null);
     const [isFocus, setIsFocus] = useState(false);
     const [startDate, setStartDate] = useState(new Date());
@@ -21,13 +22,118 @@ function DispensasiScreen() {
     const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 
     const [lamaIzin, setLamaIzin] = useState('');
+    const [alasan, setAlasan] = useState('');
+
+    const [userData, setUserData] = useState(null);
+    const [jenisIzinData, setJenisIzinData] = useState([]);
+
+
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const userDataJson = await AsyncStorage.getItem('userData');
+                const userData = JSON.parse(userDataJson);
+                setUserData(userData);
+            } catch (error) {
+                console.error('Error fetching user data from AsyncStorage:', error);
+            }
+        };
+
+        const fetchIzinData = async () => {
+            try {
+                const data = await AsyncStorage.getItem('userData');
+                if (data !== null) {
+                    const userData = JSON.parse(data);
+                    const idPegawai = userData.id_pegawai;
+
+                    const apiUrl = `https://hc.baktitimah.co.id/pegawaian/api/API_Izin/getJenisIzin?id_pegawai=${idPegawai}`;
+                    const response = await fetch(apiUrl);
+
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+
+                    const responseData = await response.json();
+                    // console.log(responseData);
+                    setJenisIzinData(responseData.data);
+                }
+            } catch (error) {
+                console.error('Error fetching riwayat izin:', error);
+            }
+        };
+
+        fetchUserData();
+        fetchIzinData();
+    }, []);
+
+    const handlePengajuanIzin = async () => {
+        try {
+            if (!userData || !userData.id_pegawai) {
+                Alert.alert('Error', 'User data is missing or invalid. Please try again.');
+                return;
+            }
+
+            const requestData = {
+                id_pegawai: userData.id_pegawai,
+                tgl_pengajuan: new Date().toISOString().split('T')[0],
+                lama: lamaIzin,
+                tgl_mulai: startDate.toISOString().split('T')[0],
+                tgl_akhir: endDate ? endDate.toISOString().split('T')[0] : null,
+                id_jenis_izin: value,
+                keterangan: alasan,
+            };
+
+            const url = 'https://hc.baktitimah.co.id/pegawaian/api/API_Izin/insertIzin';
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestData),
+            });
+            console.log(requestData);
+
+            const contentType = response.headers.get('content-type');
+            if (response.ok && contentType && contentType.includes('application/json')) {
+                const result = await response.json();
+                // console.log('API Response:', result);
+
+                if (result.status === 'success') {
+                    Alert.alert(
+                        'Success',
+                        'Cuti berhasil diajukan',
+                        [
+                            {
+                                text: 'OK',
+                                onPress: () => {
+                                    navigation.navigate('HalamanRiwayat', { screen: 'RiwayatIzin' });
+                                },
+                            },
+                        ],
+                        { cancelable: false }
+                    );
+                } else {
+                    Alert.alert('Insert failed', result.message || 'Gagal mengajukan cuti');
+                }
+            } else {
+                const errorText = await response.text();
+                console.error('API Error:', errorText);
+                Alert.alert('Insert failed', 'Invalid response from server');
+            }
+        } catch (error) {
+            console.error('API Error:', error);
+            Alert.alert('An error occurred', 'Please try again later');
+        }
+    };
 
     useEffect(() => {
         if (value) {
-            const selectedData = data.find(item => item.value === value);
+            const selectedData = jenisIzinData.find(item => item.id_jenis_izin === value);
             if (selectedData) {
-                setLamaIzin(selectedData.duration);
-                setEndDate(addDays(startDate, selectedData.duration));
+                setLamaIzin(selectedData.lama_jenis_izin);
+                setEndDate(addDays(startDate, parseInt(selectedData.lama_jenis_izin)));
             }
         }
     }, [value, startDate]);
@@ -55,154 +161,181 @@ function DispensasiScreen() {
     };
 
     const handleStartDateChange = (event, newDate) => {
-        setShowStartDatePicker(false); // Hide after selection
+        setShowStartDatePicker(false); // Sembunyikan setelah dipilih
         if (newDate !== undefined) {
             setStartDate(newDate);
-            setEndDate(addDays(newDate, selectedDuration));
+            if (value) {
+                const selectedData = jenisIzinData.find(item => item.id_jenis_izin === value);
+                if (selectedData) {
+                    setEndDate(addDays(newDate, parseInt(selectedData.lama_jenis_izin)));
+                }
+            }
         }
     };
 
     const handleEndDateChange = (event, newDate) => {
-        setShowEndDatePicker(false); // Hide after selection
+        setShowEndDatePicker(false); // Sembunyikan setelah dipilih
         if (newDate !== undefined) {
             setEndDate(newDate);
         }
     };
 
+    const handleChangeAlasan = (text) => {
+        setAlasan(text);
+    };
+
+
+
     return (
-        <SafeAreaView style={{ backgroundColor: '#E7F4FE', flex: 1 }}>
-            <ScrollView contentContainerStyle={styles.container}>
-                <View style={styles.card}>
-                    <View>
-                        <Text style={styles.text}>Nama Pekerja : </Text>
-                        <Inputan />
-                    </View>
-                    <View>
-                        <Text style={styles.text}>NIK : </Text>
-                        <Inputan />
-                    </View>
-                    <View>
-                        <Text style={styles.text}>Jabatan: </Text>
-                        <Inputan />
-                    </View>
-                    <View>
-                        <Text style={styles.text}>Unit Kerja: </Text>
-                        <Inputan />
-                    </View>
-                    <View>
-                        <Text style={styles.text}>Jenis Cuti/Izin : </Text>
-                        <Dropdown
-                            style={[styles.input, isFocus && { borderColor: 'blue' }, styles.dropdown]}
-                            placeholderStyle={styles.placeholderStyle}
-                            selectedTextStyle={styles.selectedTextStyle}
-                            inputSearchStyle={styles.inputSearchStyle}
-                            iconStyle={styles.iconStyle}
-                            data={data}
-                            search
-                            maxHeight={300}
-                            labelField="label"
-                            valueField="value"
-                            placeholder={!isFocus ? 'Select item' : '...'}
-                            searchPlaceholder="Search..."
-                            value={value}
-                            onFocus={() => setIsFocus(true)}
-                            onBlur={() => setIsFocus(false)}
-                            onChange={item => {
-                                setValue(item.value);
-                                setIsFocus(false);
-                            }}
-                            renderLeftIcon={() => (
-                                <AntDesign
-                                    style={styles.icon}
-                                    color={isFocus ? 'blue' : 'black'}
-                                    name="Safety"
-                                    size={20}
-                                />
-                            )}
-                        />
-                    </View>
-                    <View>
-                        <Text style={styles.text}>Lama Izin: </Text>
-                        <TextInput
-                            style={[styles.input, { color: 'black' }]}
-                            value={lamaIzin !== null ? `${lamaIzin} hari` : ''}
-                            editable={false}
-                        />
-                    </View>
-                    <View>
-                        <Text style={styles.text}>Tanggal Pelaksanaan : </Text>
-                        <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-                            <View style={styles.column}>
-                                <Pressable
-                                    style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton]}
-                                    onPress={handleStartDatePress}
-                                >
-                                    <Text style={styles.textButton}>Pilih Tanggal Mulai</Text>
-                                </Pressable>
-                                {showStartDatePicker && (
-                                    <DateTimePicker
-                                        value={startDate}
-                                        mode="date"
-                                        display="default"
-                                        onChange={handleStartDateChange}
+        <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+            style={{ flex: 1 }}
+        >
+            <SafeAreaView style={{ backgroundColor: '#E7F4FE', flex: 1 }}>
+                <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+                    <View style={styles.card}>
+                        {userData && (
+                            <>
+                                <View>
+                                    <Text style={styles.text}>Nama Pekerja:</Text>
+                                    <Inputan value={userData.nama} />
+                                </View>
+
+                                <View>
+                                    <Text style={styles.text}>NIK : </Text>
+                                    <Inputan value={userData.nik} />
+                                </View>
+                                <View>
+                                    <Text style={styles.text}>Unit Level: </Text>
+                                    <Inputan value={userData.nm_unit_level} />
+                                </View>
+                                <View>
+                                    <Text style={styles.text}>Unit Kerja: </Text>
+                                    <Inputan value={userData.nm_unit_organisasi} />
+                                </View>
+                                <View>
+                                    <Text style={styles.text}>Sub Unit Kerja: </Text>
+                                    <Inputan value={userData.nm_unit_kerja} />
+                                </View>
+                            </>
+                        )}
+                        <View>
+                            <Text style={styles.text}>Jenis Cuti/Izin : </Text>
+                            <Dropdown
+                                style={[styles.input, { height: 50, }, isFocus && { borderColor: 'blue', height: 60 }, styles.dropdown]}
+                                placeholderStyle={styles.placeholderStyle}
+                                selectedTextStyle={styles.selectedTextStyle}
+                                inputSearchStyle={styles.inputSearchStyle}
+                                iconStyle={styles.iconStyle}
+                                data={jenisIzinData}
+                                search
+                                maxHeight={300}
+                                labelField="nm_jenis_izin"
+                                valueField="id_jenis_izin"
+                                placeholder={!isFocus ? 'Jenis Cuti/Izin' : '...'}
+                                searchPlaceholder="Cari..."
+                                value={value}
+                                onFocus={() => setIsFocus(true)}
+                                onBlur={() => setIsFocus(false)}
+                                onChange={(item) => {
+                                    setValue(item.id_jenis_izin);
+                                    setIsFocus(false);
+                                }}
+                                renderLeftIcon={() => (
+                                    <AntDesign
+                                        style={styles.icon}
+                                        color={isFocus ? 'blue' : 'black'}
+                                        name="Safety"
+                                        size={20}
                                     />
                                 )}
+                            />
+                        </View>
+                        <View>
+                            <Text style={styles.text}>Lama Izin: </Text>
+                            <TextInput
+                                style={[styles.input, { color: 'black' }]}
+                                value={lamaIzin !== null ? `${lamaIzin} hari` : ''}
+                                editable={false}
+                            />
+                        </View>
+                        <View>
+                            <Text style={styles.text}>Tanggal Pelaksanaan : </Text>
+                            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                                <View style={styles.column}>
+                                    <Pressable
+                                        style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton]}
+                                        onPress={handleStartDatePress}
+                                    >
+                                        <Text style={styles.textButton}>Pilih Tanggal Mulai</Text>
+                                    </Pressable>
+                                    {showStartDatePicker && (
+                                        <DateTimePicker
+                                            value={startDate}
+                                            mode="date"
+                                            display="default"
+                                            onChange={handleStartDateChange}
+                                        />
+                                    )}
 
+                                </View>
                             </View>
                         </View>
-                    </View>
-                    <View>
-                        <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-                            <View style={styles.column}>
-                                <Text style={styles.text}>Tanggal Mulai</Text>
-                            </View>
-                            <View style={styles.column}>
-                                <Text style={styles.text}>Tanggal Akhir</Text>
-                            </View>
-                        </View>
-                    </View>
-                    <View>
-                        <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-                            <View style={styles.column}>
-                                <TextInput
-                                    style={[styles.input, { color: 'black' }]}
-                                    value={formattedDate(startDate)}
-                                    editable={false}
-                                />
-                            </View>
-                            <View style={styles.column}>
-                                <TextInput
-                                    style={[styles.input, { color: 'black' }]}
-                                    value={formattedDate(endDate)}
-                                    editable={false}
-                                />
+                        <View>
+                            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                                <View style={styles.column}>
+                                    <Text style={styles.text}>Tanggal Mulai</Text>
+                                </View>
+                                <View style={styles.column}>
+                                    <Text style={styles.text}>Tanggal Akhir</Text>
+                                </View>
                             </View>
                         </View>
-                    </View>
-                    <View>
-                        <Text style={styles.text}>Alasan Izin/Dispensasi: </Text>
-                        <TextPanjang/>
-                    </View>
-
-                    <View style={[{ marginTop: 20,flexDirection: 'row', justifyContent: 'center', alignItems: 'center'  }]}>
-                        <View style={[styles.column]}>
-                           
+                        <View>
+                            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                                <View style={styles.column}>
+                                    <TextInput
+                                        style={[styles.input, { color: 'black' }]}
+                                        value={formattedDate(startDate)}
+                                        editable={false}
+                                    />
+                                </View>
+                                <View style={styles.column}>
+                                    <TextInput
+                                        style={[styles.input, { color: 'black' }]}
+                                        value={formattedDate(endDate)}
+                                        editable={false}
+                                    />
+                                </View>
+                            </View>
                         </View>
-                        <View style={[styles.column]}>
-                            <Pressable
-                                style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton,]}
-                                onPress={''}
-                            >
-                                <Text style={styles.textButton}>Ajukan</Text>
-                            </Pressable>
+                        <View>
+                            <Text style={styles.text}>Alasan Izin/Dispensasi: </Text>
+                            <TextPanjang value={alasan} onChangeText={handleChangeAlasan} />
                         </View>
 
+                        <View style={[{ marginTop: 20, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }]}>
+                            <View style={[styles.column]}>
+
+                            </View>
+                            <View style={[styles.column]}>
+                                <Pressable
+                                    style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton,]}
+                                    onPress={handlePengajuanIzin}
+                                >
+                                    <Text style={styles.textButton}>Ajukan</Text>
+                                </Pressable>
+                            </View>
+
+                        </View>
+
+
                     </View>
+                </ScrollView>
+            </SafeAreaView>
+        </KeyboardAvoidingView>
 
-
-                </View>
-            </ScrollView>
-        </SafeAreaView>
     );
 }
 
@@ -269,5 +402,5 @@ const styles = StyleSheet.create({
     pressedButton: {
         opacity: 0.5,
     },
-    
+
 });

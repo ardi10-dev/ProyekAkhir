@@ -9,7 +9,7 @@ import { useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
-function DetailAprovalIzin({ route, navigation }) {
+function DetailApprovalCuti({ route, navigation }) {
 
     const [dataDetail, setDataDetail] = useState();
     const userData = route.params && route.params.userData ? route.params.userData : {};
@@ -33,14 +33,14 @@ function DetailAprovalIzin({ route, navigation }) {
     // };
     const fetchData = async () => {
         try {
-            const id_pegawai_izin = route.params.id;
+            const id_pegawai_cuti = route.params.id;
             // console.log(id_pegawai_izin);
-            const response = await fetch('https://hc.baktitimah.co.id/pegawaian/api/API_Izin/getDetailIzinApproval', {
+            const response = await fetch('https://hc.baktitimah.co.id/pegawaian/api/API_Cuti/getDetailCutiApproval', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded', // Perhatikan perubahan di sini
                 },
-                body: `id_pegawai_izin=${encodeURIComponent(id_pegawai_izin)}` // Dan di sini
+                body: `id_pegawai_cuti=${encodeURIComponent(id_pegawai_cuti)}` // Dan di sini
             });
 
             if (!response.ok) {
@@ -64,9 +64,9 @@ function DetailAprovalIzin({ route, navigation }) {
         try {
             const data = await AsyncStorage.getItem('userData');
             const userData = JSON.parse(data);
-            const id_pegawai_izin = route.params.id;
+            const id_pegawai_cuti = route.params.id;
 
-            if (!id_pegawai_izin) {
+            if (!id_pegawai_cuti) {
                 throw new Error('id_pegawai_izin is missing');
             }
 
@@ -76,7 +76,7 @@ function DetailAprovalIzin({ route, navigation }) {
             }
 
             const formData = new FormData();
-            formData.append('id_pegawai_izin', id_pegawai_izin);
+            formData.append('id_pegawai_cuti', id_pegawai_cuti);
             formData.append('id_pegawai', dataDetail[0]?.id_pegawai);
             formData.append('status', '1');
             formData.append('id_pegawai_app', userData.id_pegawai);
@@ -92,7 +92,7 @@ function DetailAprovalIzin({ route, navigation }) {
             // };
             console.log('requesy', formData);
 
-            const url = 'https://hc.baktitimah.co.id/pegawaian/api/API_Izin/approveIzin';
+            const url = 'https://hc.baktitimah.co.id/pegawaian/api/API_Cuti/approveCuti';
 
             const response = await fetch(url, {
                 method: 'POST',
@@ -113,14 +113,14 @@ function DetailAprovalIzin({ route, navigation }) {
                             {
                                 text: 'OK',
                                 onPress: () => {
-                                    navigation.navigate('AprovalIzin');
+                                    navigation.navigate('ApprovalCuti');
                                 },
                             },
                         ],
                         { cancelable: false }
                     );
                 } else {
-                    Alert.alert('Insert failed', result.message || 'Gagal mengajukan cuti');
+                    Alert.alert('Insert failed', result.message || 'Gagal Approve cuti');
                 }
             } else {
                 const errorText = await response.text();
@@ -137,9 +137,9 @@ function DetailAprovalIzin({ route, navigation }) {
         try {
             const data = await AsyncStorage.getItem('userData');
             const userData = JSON.parse(data);
-            const id_pegawai_izin = route.params.id;
+            const id_pegawai_cuti = route.params.id;
 
-            if (!id_pegawai_izin) {
+            if (!id_pegawai_cuti) {
                 throw new Error('id_pegawai_izin is missing');
             }
 
@@ -149,7 +149,7 @@ function DetailAprovalIzin({ route, navigation }) {
             }
 
             const formData = new FormData();
-            formData.append('id_pegawai_izin', id_pegawai_izin);
+            formData.append('id_pegawai_cuti', id_pegawai_cuti);
             formData.append('id_pegawai', dataDetail[0]?.id_pegawai);
             formData.append('status', '2');
             formData.append('id_pegawai_app', userData.id_pegawai);
@@ -165,7 +165,7 @@ function DetailAprovalIzin({ route, navigation }) {
             // };
             console.log('requesy', formData);
 
-            const url = 'https://hc.baktitimah.co.id/pegawaian/api/API_Izin/approveIzin';
+            const url = 'https://hc.baktitimah.co.id/pegawaian/api/API_Cuti/approveCuti';
 
             const response = await fetch(url, {
                 method: 'POST',
@@ -186,7 +186,7 @@ function DetailAprovalIzin({ route, navigation }) {
                             {
                                 text: 'OK',
                                 onPress: () => {
-                                    navigation.navigate('AprovalIzin');
+                                    navigation.navigate('ApprovalCuti');
                                 },
                             },
                         ],
@@ -236,20 +236,20 @@ function DetailAprovalIzin({ route, navigation }) {
                             </View>
                             <View>
                                 <Text style={styles.text}>Jenis Izin : </Text>
-                                <Inputan value={dataDetail[0]?.jenis_izin || ''} />
+                                <Inputan value={dataDetail[0]?.jenis_cuti || ''} />
                             </View>
                             <View>
                                 <Text style={styles.text}>Lama Izin : </Text>
                                 <Inputan value={dataDetail[0]?.lama || ''} />
                             </View>
                             <View>
-                                <Text style={styles.text}>Alasan Izin: </Text>
+                                <Text style={styles.text}>Alasan Cuti : </Text>
                                 <TextPanjang value={dataDetail[0]?.keterangan || ''} onChangeText={handleChangeAlasan} />
                             </View>
                         </>
                     )}
                     <View>
-                        <Text style={styles.text}>Catatan Dari Approve: </Text>
+                        <Text style={styles.text}>Catatan Dari Approve:: </Text>
                         <TextPanjang value={alasan} onChangeText={handleChangeAlasan} />
                     </View>
 
@@ -280,7 +280,7 @@ function DetailAprovalIzin({ route, navigation }) {
     );
 }
 
-export default DetailAprovalIzin;
+export default DetailApprovalCuti;
 
 const styles = StyleSheet.create({
     container: {

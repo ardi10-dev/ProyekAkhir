@@ -1,10 +1,10 @@
-import { View, Text, Image, StyleSheet, SafeAreaView, ScrollView, Pressable, Alert  } from "react-native";
+import { View, Text, Image, StyleSheet, SafeAreaView, ScrollView, Pressable, Alert } from "react-native";
 import React, { useState, useEffect } from 'react';
 import { launchCameraAsync, useCameraPermissions, PermissionStatus } from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
+import * as ImageManipulator from 'expo-image-manipulator';
 
-
-
-function HalamanGambar() {
+function HalamanGambar({ onImageTaken }) {
     const [pickedImage, setPickedImage] = useState();
     const [cameraPermissionInformation, requestPermission] = useCameraPermissions();
     const [imageError, setImageError] = useState(false);
@@ -15,13 +15,13 @@ function HalamanGambar() {
             return permissionResponse.granted;
         }
 
-        if (cameraPermissionInformation.status === PermissionStatus.DENIED) {
-            Alert.alert(
-                'Insufficient permissions!',
-                'You need to grant location permissions to use this app.'
-            );
-            return false;
-        }
+        // if (cameraPermissionInformation.status === PermissionStatus.DENIED) {
+        //     Alert.alert(
+        //         'Insufficient permissions!',
+        //         'Anda perlu memberikan izin kamera untuk menggunakan aplikasi ini.'
+        //     );
+        //     return false;
+        // }
         return true;
     }
 
@@ -38,8 +38,41 @@ function HalamanGambar() {
         });
 
         if (!image.canceled) {
-            setPickedImage(image.assets[0].uri);
-        } 
+            // console.log('Original Image URI:', image.assets[0].uri);
+
+            try {
+                const manipulatedImage = await ImageManipulator.manipulateAsync(
+                    image.assets[0].uri,
+                    [{ resize: { width: 800, height: 600 } }],
+                    { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+                );
+
+                // console.log('Manipulated Image URI:', manipulatedImage.uri);
+
+                const newImageUri = `${FileSystem.cacheDirectory}photo.jpg`;
+                await FileSystem.moveAsync({
+                    from: manipulatedImage.uri,
+                    to: newImageUri,
+                });
+
+                // console.log('New Image URI:', newImageUri);
+                setPickedImage(newImageUri);
+                onImageTaken(newImageUri);
+            } catch (error) {
+                console.log('Error manipulating image:', error);
+            }
+
+            // const resizedImage = await ImageResizer.createResizedImage(
+            //     image.assets[0].uri,
+            //     800, // width
+            //     600, // height
+            //     'JPEG',
+            //     80 // quality
+            // );
+            // console.log('Image URI:', resizedImage.assets[0].uri);
+            // setPickedImage(resizedImage.assets[0].uri);
+            // onImageTaken(resizedImage.assets[0].uri);
+        }
     }
 
     let imagePreview = <Text>No image taken yet.</Text>;
@@ -53,7 +86,7 @@ function HalamanGambar() {
         <View>
             <View>
                 <View style={styles.imagePreview}>
-                   {imagePreview}
+                    {imagePreview}
                 </View>
                 <Pressable
                     style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton,]}

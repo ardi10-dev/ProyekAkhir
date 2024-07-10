@@ -1,15 +1,19 @@
-import { View, Text, Image, StyleSheet, SafeAreaView, ScrollView, Pressable } from "react-native";
+import { View, Text, Image, StyleSheet, SafeAreaView, ScrollView, Pressable, PermissionsAndroid, Alert } from "react-native";
 import React, { useState, useEffect } from 'react';
 import { useRoute } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getCurrentPositionAsync, useForegroundPermissions, PermissionStatus } from 'expo-location';
 import { useNavigation } from '@react-navigation/native';
 import NavBottom from "../../components/NavBottom";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 
 function MenuAbsensi() {
 
     const [locationPermissionsInformation, requestPermission] = useForegroundPermissions();
+    const [btndisabel, setBtndisabel] = useState(false);
+
 
     async function verifyPermissions() {
         if (locationPermissionsInformation.status === PermissionStatus.UNDETERMINED) {
@@ -39,11 +43,65 @@ function MenuAbsensi() {
             console.log(location);
 
             const { latitude, longitude } = location.coords;
-            navigation.navigate('HalamanAbsen', { latitude, longitude });
+            navigation.navigate('HalamanAbsensi', { latitude, longitude });
         } catch (error) {
             Alert.alert('Error', 'Failed to get location.');
         }
     }
+    useEffect(() => {
+        const fetchDatajadwalMasuk = async () => {
+            try {
+                const data = await AsyncStorage.getItem('userData');
+                const userData = JSON.parse(data);
+                const idPegawai = userData.id_pegawai;
+    
+                const apiUrl = `https://hc.baktitimah.co.id/pegawaian/api/API_Absen/dataAbsen_get?id_pegawai=${idPegawai}`;
+                const response = await fetch(apiUrl);
+                const absenData = await response.json();
+                
+                const filterdata = absenData.data;
+                
+                // Get today's date with Indonesia time zone in yyyy-MM-dd format
+                const today = new Date().toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta' });
+                // const finalDate = today.slice(0, 10);
+                var parts = today.split('/');
+                var partsfinal;
+                // console.log(parts[1].length);
+                if(parts[1].length < 2){
+
+                    var partsfinal = (parts[2]+'-'+'0'+parts[1]+'-'+parts[0]).toString();
+                }
+                else{
+
+                    var partsfinal = (parts[2]+'-'+parts[1]+'-'+parts[0]).toString();
+                }
+                // console.log(partsfinal);
+                let isTodayAbsen = false;
+                filterdata.forEach((item) => {
+                    // Assuming item[4] is in yyyy-MM-dd format
+                    if (item[4] == partsfinal) {
+                        isTodayAbsen = true;
+                        console.log(item[4]);
+                    }
+                    console.log(item[4]);
+                });
+    
+                setBtndisabel(isTodayAbsen);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                // Handle error state if needed
+            }
+        };
+    
+        const focusSubscription = navigation.addListener('focus', () => {
+            fetchDatajadwalMasuk();
+        });
+    
+        return () => {
+            focusSubscription();
+        };
+    }, [navigation, setBtndisabel]);
+    
 
     async function buttonAbsensPulangHandler() {
         try {

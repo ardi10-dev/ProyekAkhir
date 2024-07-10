@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Pressable, View, Text, StyleSheet, Platform, Alert } from "react-native";
 import { useNavigation } from '@react-navigation/native';
 import { AntDesign, FontAwesome6, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 
@@ -20,10 +20,12 @@ function CardMenu({ role_id }) {
         navigation.navigate('CutiTahunanScreen');
     }
     function buttonRiwayatHandler() {
-        navigation.navigate('HalamanRiwayat');
+        navigation.navigate('RiwayatStackScreen', { screen: 'HalamanRiwayat' });
+
+        // navigation.navigate('HalamanRiwayat');
     }
     function buttonAprovHandler() {
-        navigation.navigate('HalamanAproval');
+        navigation.navigate('AprovalStackScreen', { screen: 'HalamanAproval' });
     }
     function buttonLemburHandler() {
         navigation.navigate('LemburScreen');

@@ -1,7 +1,12 @@
 import { View, Text, Image, StyleSheet, SafeAreaView, ScrollView, Pressable } from "react-native";
 import React, { useState, useEffect } from 'react';
+import { useNavigation } from '@react-navigation/native';
 
-function CardIzin({ nama, nip, ket, jenisIzin, tanggal }) {
+
+function CardIzinApprove({ Id_pegawai_izin, nama, nip, ket, jenisIzin, tanggal, tgl_mulai, tgl_akhir }) {
+
+    const navigation = useNavigation();
+
 
     const ketStyle = (ket) => {
         switch (ket) {
@@ -15,6 +20,14 @@ function CardIzin({ nama, nip, ket, jenisIzin, tanggal }) {
                 return { text: 'Unknown', backgroundColor: 'white', textColor: 'black' };
         }
     }
+
+
+    function buttonMenuDetail() {
+        navigation.navigate('DetailAprovalIzin', { id: Id_pegawai_izin });
+        // console.log(Id_pegawai_izin);
+    }
+
+
 
     return (
         <View style={styles.container}>
@@ -40,13 +53,38 @@ function CardIzin({ nama, nip, ket, jenisIzin, tanggal }) {
                 <View style={styles.rowContainer}>
                     <View style={styles.leftColumn}>
                         <Text style={[styles.label, { marginTop: 10 }]}>Keterangan:</Text>
-                        <View style={[styles.statusContainer, { backgroundColor: ketStyle(ket).backgroundColor}]}>
-                            <Text style={[styles.statusText,{ color: ketStyle(ket).textColor }]}>{ketStyle(ket).text}</Text>
+                        <View style={[styles.statusContainer, { backgroundColor: ketStyle(ket).backgroundColor }]}>
+                            <Text style={[styles.statusText, { color: ketStyle(ket).textColor }]}>{ketStyle(ket).text}</Text>
                         </View>
+                        {/* <View style={styles.statusContainer}>
+                            <Text style={[styles.statusText]}>{ketStyle(ket).text}</Text>
+
+                        </View> */}
+
                     </View>
                     <View style={styles.rightColumn}>
                         <Text style={[styles.label, { marginTop: 10 }]}>Jenis Izin:</Text>
                         <Text style={styles.textTengah}>{jenisIzin}</Text>
+                    </View>
+                </View>
+
+
+                <View style={styles.rowContainer}>
+                    <View style={[styles.rightColumn, { marginTop: 10, }]}>
+                        {/* <Pressable
+                            style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton, { backgroundColor: '#E4003A', }]}
+                            onPress={''}
+                        >
+                            <Text style={styles.textButton}>TOLAK</Text>
+                        </Pressable> */}
+                    </View>
+                    <View style={[styles.rightColumn, { marginTop: 10, }]}>
+                        <Pressable
+                            style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton, { backgroundColor: '#008DDA', }]}
+                            onPress={buttonMenuDetail}
+                        >
+                            <Text style={styles.textButton}>DETAIL</Text>
+                        </Pressable>
                     </View>
                 </View>
             </View>
@@ -55,7 +93,7 @@ function CardIzin({ nama, nip, ket, jenisIzin, tanggal }) {
 }
 
 
-export default CardIzin;
+export default CardIzinApprove;
 
 const styles = StyleSheet.create({
     container: {
@@ -67,7 +105,8 @@ const styles = StyleSheet.create({
         borderWidth: 0.5,
         borderColor: 'gray',
         borderRadius: 10,
-        marginTop: 10,
+        marginTop: 5, 
+        marginBottom: 5,
         padding: 16,
         shadowColor: "#000",
         shadowOffset: {
@@ -127,5 +166,18 @@ const styles = StyleSheet.create({
         color: 'black',
         fontWeight: 'bold',
         fontSize: 15,
+    },
+    buttonContainer: {
+        padding: 10,
+
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    textButton: {
+        fontWeight: 'bold',
+        color: 'white'
+    },
+    pressedButton: {
+        opacity: 0.5,
     },
 });
