@@ -1,29 +1,32 @@
 import { NativeModules, Platform } from 'react-native';
+import { Alert } from 'react-native';
 import { useEffect, useState } from 'react';
+import * as Location from 'expo-location';
 
 const useDetectMockLocationApp = () => {
+  const [isMockLocation, setIsMockLocation] = useState(false);
+
   useEffect(() => {
-    console.log(NativeModules); // Tambahkan ini untuk melihat modul yang tersedia
-    const checkMockLocationApp = async () => {
-      if (Platform.OS === 'android') {
-        const { PackageManager } = NativeModules;
-        if (!PackageManager) {
-          console.error('PackageManager tidak tersedia di NativeModules');
-          return;
-        }
-        const mockApps = ['com.fakegps', 'com.fakegps.location', 'com.lexa.fakegps','com.blogspot.newapphorizons.fakegps'];
-        try {
-          const installedApps = await PackageManager.getInstalledPackages(0);
-          const isMockAppInstalled = installedApps.some(app => mockApps.includes(app.packageName));
-          setIsMockLocationAppDetected(isMockAppInstalled);
-        } catch (error) {
-          console.error('Error checking mock location apps', error);
-        }
+    const checkMockLocation = async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission to access location was denied');
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      if (location.mocked) {
+        setIsMockLocation(true);
+        Alert.alert('Warning', 'Detected usage of fake GPS location.');
+      } else {
+        setIsMockLocation(false);
       }
     };
-  
-    checkMockLocationApp();
+
+    checkMockLocation();
   }, []);
+
+  return isMockLocation;
   
 }
 export default useDetectMockLocationApp;

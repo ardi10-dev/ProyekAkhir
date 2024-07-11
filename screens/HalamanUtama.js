@@ -12,7 +12,7 @@ import NavBottom from "../components/NavBottom";
 import { ActivityIndicator } from 'react-native';
 import DefaultProfileImage from '../assets/user.png';
 import * as Location from 'expo-location';
-// import useDetectMockLocationApp from "../library/useDetectMockLocationApp";
+import useDetectMockLocationApp from "../library/useDetectMockLocationApp";
 
 
 function HalamanUtama({ route }) {
@@ -219,16 +219,16 @@ function HalamanUtama({ route }) {
             console.log(location);
 
             const { latitude, longitude } = location.coords;
-            // if (isMockLocationAppDetected) {
-            //     Alert.alert('Warning', 'Detected usage of fake GPS location.');
-            //     setIsNavigating(false);
-            //     return;
-            // }
+            if (isMockLocationAppDetected) {
+                Alert.alert('Warning', 'Detected usage of fake GPS location.');
+                setIsNavigating(false);
+                return;
+            }
             navigation.navigate('HalamanAbsensi', { latitude, longitude });
         } catch (error) {
             Alert.alert('Error', 'Failed to get location.');
         } finally {
-            isNavigating = false;
+            setIsNavigating(false);
         }
     };
 
@@ -236,38 +236,31 @@ function HalamanUtama({ route }) {
         try {
             if (isNavigating) return;
 
-            isNavigating = true;
+            setIsNavigating(true);
             const hasPermission = await verifyPermissions();
             if (!hasPermission) {
-                isNavigating = false;
+                setIsNavigating(false);
                 return;
             }
 
             const location = await getCurrentPositionAsync({});
             console.log(location);
-
             const { latitude, longitude } = location.coords;
 
-            navigation.navigate('HalamanAbsenPulang', { latitude, longitude });
+            if (isMockLocationAppDetected) {
+                Alert.alert('Warning', 'Detected usage of fake GPS location.');
+                setIsNavigating(false);
+                return;
+            }
+            navigation.navigate('HalamanAbsensi', { latitude, longitude });
         } catch (error) {
             Alert.alert('Error', 'Failed to get location.');
         } finally {
-            isNavigating = false; // Reset status navigasi setelah selesai
+            setIsNavigating(false);
         }
     };
 
-
-    const [currentTime, setCurrentTime] = useState(new Date());
-
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrentTime(new Date());
-        }, 1000);
-
-        return () => {
-            clearInterval(timer);
-        };
-    }, []);
+    
 
     const buttonLogOut2Handler = async (navigation) => {
         try {
