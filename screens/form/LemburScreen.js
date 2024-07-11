@@ -98,7 +98,7 @@ function LemburScreen() {
                             {
                                 text: 'OK',
                                 onPress: () => {
-                                    navigation.navigate('HalamanRiwayat', { screen: 'RiwayatLembur' });
+                                    navigation.navigate('RiwayatStackScreen', { screen: 'RiwayatLembur' });
                                 },
                             },
                         ],

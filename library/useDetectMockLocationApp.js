@@ -2,13 +2,16 @@ import { NativeModules, Platform } from 'react-native';
 import { useEffect, useState } from 'react';
 
 const useDetectMockLocationApp = () => {
-  const [isMockLocationAppDetected, setIsMockLocationAppDetected] = useState(false);
-
   useEffect(() => {
+    console.log(NativeModules); // Tambahkan ini untuk melihat modul yang tersedia
     const checkMockLocationApp = async () => {
       if (Platform.OS === 'android') {
         const { PackageManager } = NativeModules;
-        const mockApps = ['com.fakegps', 'com.fakegps.location', 'com.lexa.fakegps']; 
+        if (!PackageManager) {
+          console.error('PackageManager tidak tersedia di NativeModules');
+          return;
+        }
+        const mockApps = ['com.fakegps', 'com.fakegps.location', 'com.lexa.fakegps','com.blogspot.newapphorizons.fakegps'];
         try {
           const installedApps = await PackageManager.getInstalledPackages(0);
           const isMockAppInstalled = installedApps.some(app => mockApps.includes(app.packageName));
@@ -18,11 +21,9 @@ const useDetectMockLocationApp = () => {
         }
       }
     };
-
+  
     checkMockLocationApp();
   }, []);
-
-  return isMockLocationAppDetected;
-};
-
+  
+}
 export default useDetectMockLocationApp;

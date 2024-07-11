@@ -1,4 +1,4 @@
-import { View, Text, Image, StyleSheet, SafeAreaView, ScrollView, Pressable, PermissionsAndroid, Alert } from "react-native";
+import { View, Text, Image, StyleSheet, SafeAreaView, ScrollView, Pressable, Alert, BackHandler } from "react-native";
 import React, { useState, useEffect } from 'react';
 import { useRoute } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -6,14 +6,107 @@ import { getCurrentPositionAsync, useForegroundPermissions, PermissionStatus } f
 import { useNavigation } from '@react-navigation/native';
 import NavBottom from "../../components/NavBottom";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { CommonActions } from "@react-navigation/native";
+import { ActivityIndicator } from 'react-native';
 
 
 
-function MenuAbsensi() {
+function MenuAbsensi({ route }) {
+
+    const navigation = useNavigation();
 
     const [locationPermissionsInformation, requestPermission] = useForegroundPermissions();
-    const [btndisabel, setBtndisabel] = useState(false);
+    const [sessionId, setSessionId] = useState('');
+    const [username, setUsername] = useState('');
+    const [userId, setUserId] = useState('');
+    const [profileUser, setProfileUser] = useState([]); 
+    const [loading, setLoading] = useState(true);
 
+    const userData = route.params && route.params.userData ? route.params.userData : {};
+    const userEmail = userData.email || 'Guest';
+    const role_id = userData.role_id;
+    const id_pegawai = userData.id_pegawai;
+
+    const [shiftData, setShiftData] = useState(null);
+    const [jam_masukShift, setJam_masukShift] = useState();
+    const [jam_KeluarShift, setJam_KeluarShift] = useState();
+    const [btndisabel, setBtndisabel] = useState(false);
+    const [btnPulangDisabel, setBtnPulangDisabel] = useState(false);
+
+    useEffect(() => {
+        const setJamShift = async () => {
+            let masukJamshift = await AsyncStorage.getItem('jam_masuk');
+            let keluarJamshift = await AsyncStorage.getItem('jam_keluar');
+            setJam_masukShift(masukJamshift);
+            setJam_KeluarShift(keluarJamshift);
+        }
+        const focusSubscription = navigation.addListener('focus', () => {
+            setJamShift();
+        });
+        return () => {
+            focusSubscription();
+        };
+    }, [navigation]);
+
+    useEffect(() => {
+        const fetchDatajadwalMasuk = async () => {
+            try {
+                const data = await AsyncStorage.getItem('userData');
+                const userData = JSON.parse(data);
+                const idPegawai = userData.id_pegawai;
+
+                const apiUrl = `https://hc.baktitimah.co.id/pegawaian/api/API_Absen/dataAbsen_get?id_pegawai=${idPegawai}`;
+                const response = await fetch(apiUrl);
+                const absenData = await response.json();
+
+                const filterdata = absenData.data;
+
+                // Get today's date with Indonesia time zone in yyyy-MM-dd format
+                const today = new Date().toLocaleDateString('id-ID', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                });
+                
+                let isTodayAbsen = false;
+                filterdata.forEach((item) => {
+                    // Assuming item[4] is in yyyy-MM-dd format
+                    if (item[4] == today) {
+                        isTodayAbsen = true;
+                    }
+                });
+
+                setBtndisabel(isTodayAbsen);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+
+        const fetchDatajadwalKeluar = async () => {
+            const jamKeluar = await AsyncStorage.getItem('jam_keluar');
+            const currentTime = new Date().toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta' });
+            const partst = currentTime.split(".");
+            const hour = partst[0];
+            const minute = partst[1];
+            const second = partst[2];
+            const formattedTime = `${hour}:${minute}:${second}`;
+
+            if (formattedTime > jamKeluar) {
+                setBtnPulangDisabel(false);
+            } else {
+                setBtnPulangDisabel(true);
+            }
+        };
+
+        const focusSubscription = navigation.addListener('focus', () => {
+            fetchDatajadwalMasuk();
+            fetchDatajadwalKeluar();
+        });
+
+        return () => {
+            focusSubscription();
+        };
+    }, [navigation]);
 
     async function verifyPermissions() {
         if (locationPermissionsInformation.status === PermissionStatus.UNDETERMINED) {
@@ -31,8 +124,6 @@ function MenuAbsensi() {
         return true;
     }
 
-    const navigation = useNavigation();
-
     async function buttonAbsensHandler() {
         try {
             const hasPermission = await verifyPermissions();
@@ -40,68 +131,12 @@ function MenuAbsensi() {
                 return;
             }
             const location = await getCurrentPositionAsync({});
-            console.log(location);
-
             const { latitude, longitude } = location.coords;
             navigation.navigate('HalamanAbsensi', { latitude, longitude });
         } catch (error) {
             Alert.alert('Error', 'Failed to get location.');
         }
     }
-    useEffect(() => {
-        const fetchDatajadwalMasuk = async () => {
-            try {
-                const data = await AsyncStorage.getItem('userData');
-                const userData = JSON.parse(data);
-                const idPegawai = userData.id_pegawai;
-    
-                const apiUrl = `https://hc.baktitimah.co.id/pegawaian/api/API_Absen/dataAbsen_get?id_pegawai=${idPegawai}`;
-                const response = await fetch(apiUrl);
-                const absenData = await response.json();
-                
-                const filterdata = absenData.data;
-                
-                // Get today's date with Indonesia time zone in yyyy-MM-dd format
-                const today = new Date().toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta' });
-                // const finalDate = today.slice(0, 10);
-                var parts = today.split('/');
-                var partsfinal;
-                // console.log(parts[1].length);
-                if(parts[1].length < 2){
-
-                    var partsfinal = (parts[2]+'-'+'0'+parts[1]+'-'+parts[0]).toString();
-                }
-                else{
-
-                    var partsfinal = (parts[2]+'-'+parts[1]+'-'+parts[0]).toString();
-                }
-                // console.log(partsfinal);
-                let isTodayAbsen = false;
-                filterdata.forEach((item) => {
-                    // Assuming item[4] is in yyyy-MM-dd format
-                    if (item[4] == partsfinal) {
-                        isTodayAbsen = true;
-                        console.log(item[4]);
-                    }
-                    console.log(item[4]);
-                });
-    
-                setBtndisabel(isTodayAbsen);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-                // Handle error state if needed
-            }
-        };
-    
-        const focusSubscription = navigation.addListener('focus', () => {
-            fetchDatajadwalMasuk();
-        });
-    
-        return () => {
-            focusSubscription();
-        };
-    }, [navigation, setBtndisabel]);
-    
 
     async function buttonAbsensPulangHandler() {
         try {
@@ -110,15 +145,12 @@ function MenuAbsensi() {
                 return;
             }
             const location = await getCurrentPositionAsync({});
-            console.log(location);
-
             const { latitude, longitude } = location.coords;
             navigation.navigate('HalamanAbsensPulang', { latitude, longitude });
         } catch (error) {
             Alert.alert('Error', 'Failed to get location.');
         }
     }
-
 
     return (
         <SafeAreaView style={styles.container}>
@@ -133,17 +165,16 @@ function MenuAbsensi() {
                                     </View>
                                     <View style={[styles.column]}>
                                         <Text style={[styles.textTengah]}>Absen Masuk</Text>
-                                        <Text style={[styles.textTengah]}>00:00:00</Text>
+                                        <Text style={[styles.textTengah]}>{jam_masukShift || "00:00:00"}</Text>
                                     </View>
                                 </View>
-
                             </View>
                             <View style={[styles.column2]}>
                                 <Pressable
-                                    style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton,]}
+                                    style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton, { backgroundColor: btndisabel ? 'gray' : 'blue' }]}
                                     onPress={buttonAbsensHandler}
+                                    disabled={btndisabel}
                                 >
-
                                     <Text style={styles.textButton}>Absen Masuk</Text>
                                 </Pressable>
                             </View>
@@ -160,17 +191,16 @@ function MenuAbsensi() {
                                     </View>
                                     <View style={[styles.column]}>
                                         <Text style={[styles.textTengah]}>Absen Pulang</Text>
-                                        <Text style={[styles.textTengah]}>00:00:00</Text>
+                                        <Text style={[styles.textTengah]}>{jam_KeluarShift || "00:00:00"}</Text>
                                     </View>
                                 </View>
-
                             </View>
                             <View style={[styles.column2]}>
                                 <Pressable
-                                    style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton,]}
+                                    style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton, { backgroundColor: btnPulangDisabel ? 'gray' : 'blue' }]}
                                     onPress={buttonAbsensPulangHandler}
+                                    disabled={btnPulangDisabel}
                                 >
-
                                     <Text style={styles.textButton}>Absen Pulang</Text>
                                 </Pressable>
                             </View>
@@ -180,7 +210,7 @@ function MenuAbsensi() {
             </View>
             <NavBottom style={styles.posisiFixed} />
         </SafeAreaView>
-    )
+    );
 }
 
 export default MenuAbsensi;
@@ -194,7 +224,7 @@ const styles = StyleSheet.create({
     mainContent: {
         flex: 1,
         // Gaya untuk konten utama
-      },
+    },
     appContainer: {
         paddingTop: 50,
         paddingHorizontal: 16,
@@ -247,9 +277,11 @@ const styles = StyleSheet.create({
     },
 
     buttonContainer: {
-        backgroundColor: '#008DDA',
-        borderRadius: 10,
-        height: 40,
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 30,
+        width:150,
     },
     textButton: {
         fontWeight: 'bold',

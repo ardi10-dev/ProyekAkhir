@@ -39,6 +39,7 @@ function CutiTahunanScreen({ route }) {
     const [userData, setUserData] = useState(null);
     const [sisaCuti, setSisaCuti] = useState(null);
     const [cutiData, setCutiData] = useState(null);
+    const [sisaCutiData, setSisaCutiData] = useState({});
     useEffect(() => {
         const fetchUserData = async () => {
             try {
@@ -67,11 +68,12 @@ function CutiTahunanScreen({ route }) {
                     const responseData = await response.json();
                     if (responseData.data && responseData.data.length > 0) {
                         setCutiData(responseData.data[0]);
+                        setSisaCutiData(responseData.data[0]);
                     } else {
                         setCutiData({});
                     }
-                    // setCutiData(responseData.data[0]);
-                    console.log(setCutiData);
+                    setCutiData(responseData.data[0]);
+                    // console.log(setCutiData);
                 }
             } catch (error) {
                 console.error('Error fetching riwayat Cuti:', error);
@@ -125,7 +127,8 @@ function CutiTahunanScreen({ route }) {
                             {
                                 text: 'OK',
                                 onPress: () => {
-                                    navigation.navigate('HalamanRiwayat', { screen: 'RiwayatPCuti' });
+                                    // navigation.navigate('HalamanRiwayat', { screen: 'RiwayatPCuti' });
+                                    navigation.navigate('RiwayatStackScreen', { screen: 'RiwayatPCuti' });
                                 },
                             },
                         ],
@@ -218,9 +221,9 @@ function CutiTahunanScreen({ route }) {
                             </>
                         )}
                         <View>
-                        <Text style={styles.text}>Sisa Cuti Tahun: </Text>
-                        <Inputan value={cutiData.jatah_cuti ? cutiData.jatah_cuti.toString() : ''} />
-                    </View>
+                            <Text style={styles.text}>Sisa Cuti Tahun: </Text>
+                            <Inputan value={sisaCutiData.jatah_cuti ? sisaCutiData.jatah_cuti : ''}  />
+                        </View>
                         <View>
                             <Text style={styles.text}>Lama Cuti: </Text>
                             <TextInput
@@ -346,7 +349,7 @@ function CutiTahunanScreen({ route }) {
 
                         <View>
                             <Text style={styles.text}>Sisa Cuti: </Text>
-                            <Inputan value={''}
+                            <Inputan value={sisaCuti !== null ? `${sisaCuti} hari` : ''}
                                 editable={false} />
                         </View>
 

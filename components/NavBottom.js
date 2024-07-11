@@ -22,7 +22,7 @@ function NavBottom() {
     };
 
     const buttonAbsensiHandler = () => {
-        navigation.navigate('RiwayatStackScreen', { screen: 'HalamanRiwayat' });
+        navigation.navigate('RiwayatStackScreen', { screen: 'RiwayatAbsen' });
     };
 
     const buttonLogOutHandler = () => {

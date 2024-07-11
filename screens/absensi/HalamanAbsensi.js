@@ -138,7 +138,8 @@ function HalamanAbsensi() {
 
     const closeModal = () => {
         setModalVisible(false);
-        navigation.navigate('RiwayatAbsen');
+        // navigation.navigate('RiwayatAbsen');
+        navigation.navigate('RiwayatStackScreen', { screen: 'RiwayatAbsen' });
     };
 
 

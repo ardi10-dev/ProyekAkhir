@@ -11,11 +11,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import NavBottom from "../components/NavBottom";
 import { ActivityIndicator } from 'react-native';
 import DefaultProfileImage from '../assets/user.png';
+import * as Location from 'expo-location';
+// import useDetectMockLocationApp from "../library/useDetectMockLocationApp";
 
 
 function HalamanUtama({ route }) {
     const navigation = useNavigation();
-    let isNavigating = false;
+    const [isNavigating, setIsNavigating] = useState(false);
+    const isMockLocationAppDetected = useDetectMockLocationApp();
 
     const [locationPermissionsInformation, requestPermission] = useForegroundPermissions();
     const [sessionId, setSessionId] = useState('');
@@ -83,7 +86,7 @@ function HalamanUtama({ route }) {
                     const imageUrl = `http://hc.baktitimah.co.id/pegawaian/image/profileuser/${responseData.data.image}`;
 
                     // Log the image URL http://hc.baktitimah.co.id/pegawaian/image/profileuser/6572eb41f44929edc64d000cee576ed3.jpg
-                    console.log("Image URL:", imageUrl);
+                    // console.log("Image URL:", imageUrl);
                     setProfileUser(responseData.data);
                     setLoading(false);
                     // console.log("Data Profile:", responseData.data.image);
@@ -118,21 +121,7 @@ function HalamanUtama({ route }) {
                     month: 'long',
                     day: 'numeric',
                 });
-                // console.log(today);
 
-                // // const finalDate = today.slice(0, 10);
-                // var parts = today.split('/');
-                // var partsfinal;
-                // // console.log('cekkk', parts[1].length);
-                // if (parts[1].length < 2) {
-
-                //     var partsfinal = (parts[2] + '-' + '0' + parts[1] + '-' + parts[0]).toString();
-                // }
-                // else {
-
-                //     var partsfinal = (parts[2] + '-' + parts[1] + '-' + parts[0]).toString();
-                // }
-                // // console.log(partsfinal);
                 let isTodayAbsen = false;
                 filterdata.forEach((item) => {
                     // Assuming item[4] is in yyyy-MM-dd format
@@ -184,12 +173,8 @@ function HalamanUtama({ route }) {
     }, [navigation, setBtndisabel, setBtnPulangDisabel]);
 
     async function verifyPermissions() {
-        if (locationPermissionsInformation.status === PermissionStatus.UNDETERMINED) {
-            const permissionResponse = await requestPermission();
-            return permissionResponse.granted;
-        }
-
-        if (locationPermissionsInformation.status === PermissionStatus.DENIED) {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
             Alert.alert(
                 'Insufficient permissions!',
                 'You need to grant location permissions to use this app.'
@@ -205,13 +190,12 @@ function HalamanUtama({ route }) {
     }
 
     async function buttonAbsensHandler() {
+        if (isNavigating) return; 
+        setIsNavigating(true);
         try {
-            if (isNavigating) return;
-            isNavigating = true;
-
             const hasPermission = await verifyPermissions();
             if (!hasPermission) {
-                isNavigating = false;
+                setIsNavigating(false);
                 return;
             }
 
@@ -235,16 +219,16 @@ function HalamanUtama({ route }) {
             console.log(location);
 
             const { latitude, longitude } = location.coords;
-            if (await isMockLocation()) {
-                Alert.alert('Warning', 'Detected usage of fake GPS location.');
-                isNavigating = false;
-                return;
-            }
+            // if (isMockLocationAppDetected) {
+            //     Alert.alert('Warning', 'Detected usage of fake GPS location.');
+            //     setIsNavigating(false);
+            //     return;
+            // }
             navigation.navigate('HalamanAbsensi', { latitude, longitude });
         } catch (error) {
             Alert.alert('Error', 'Failed to get location.');
         } finally {
-            isNavigating = false; // Reset status navigasi setelah selesai
+            isNavigating = false;
         }
     };
 
@@ -321,7 +305,7 @@ function HalamanUtama({ route }) {
     }, [navigation]);
 
     const getImageSource = () => {
-        if (profileUser && profileUser.image ) {
+        if (profileUser && profileUser.image) {
             return { uri: `http://hc.baktitimah.co.id/pegawaian/image/profileuser/  ${userData.image}` };
         } else {
             // Jika tidak ada gambar profil atau gambar tidak ditemukan, tampilkan gambar default

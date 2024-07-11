@@ -8,6 +8,7 @@ import CardBox from '../../components/CardBox';
 import { ActivityIndicator } from 'react-native';
 
 function RiwayatAbsen() {
+
     const [selectedYear, setSelectedYear] = useState('all');
     const [selectedMonth, setSelectedMonth] = useState('all');
     const [filteredData, setFilteredData] = useState([]);
@@ -149,8 +150,9 @@ function RiwayatAbsen() {
 
             <FlatList
                 data={filteredData}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item, index) => index.toString()}
                 renderItem={renderRiwayatAbsen}
+                ListEmptyComponent={<Text>No data found</Text>} 
             />
         </SafeAreaView>
     );

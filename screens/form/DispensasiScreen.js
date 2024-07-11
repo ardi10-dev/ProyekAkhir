@@ -108,7 +108,7 @@ function DispensasiScreen() {
                             {
                                 text: 'OK',
                                 onPress: () => {
-                                    navigation.navigate('HalamanRiwayat', { screen: 'RiwayatIzin' });
+                                    navigation.navigate('RiwayatStackScreen', { screen: 'RiwayatIzin' });
                                 },
                             },
                         ],
