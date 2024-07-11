@@ -80,7 +80,7 @@ function HalamanAbsenPulang({ navigation }) {
 
     const closeModal = () => {
         setModalVisible(false);
-        navigation.navigate('RiwayatAbsen');
+        navigation.navigate('RiwayatStackScreen', { screen: 'RiwayatAbsen' });
     };
 
     const handleImageTaken = (imageUri) => {

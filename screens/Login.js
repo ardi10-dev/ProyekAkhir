@@ -1,4 +1,4 @@
-import { View, Text, Image, StyleSheet, SafeAreaView, TextInput, ScrollView, Pressable, Platform, Animated, Alert, KeyboardAvoidingView } from "react-native";
+import { View, Text, Image, StyleSheet, SafeAreaView, TextInput, ScrollView, Pressable, Platform, Alert, KeyboardAvoidingView } from "react-native";
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -51,10 +51,13 @@ function Login({ navigation }) {
                         nm_unit_organisasi: result.data.nm_unit_organisasi,
                         nm_unit_usaha: result.data.nm_unit_usaha,
                         image: result.data.image,
+                        token: result.token,
                     };
                     console.log(userData);
 
                     await AsyncStorage.setItem('userData', JSON.stringify(userData));
+                    console.log('Token login:', userData.token);
+                    // console.log(userData.token);
 
                     // Navigasi ke HalamanUtama dengan data pengguna
                     navigation.navigate('HalamanUtama', { userData });

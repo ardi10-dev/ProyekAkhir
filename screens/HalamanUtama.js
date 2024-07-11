@@ -18,55 +18,16 @@ import useDetectMockLocationApp from "../library/useDetectMockLocationApp";
 function HalamanUtama({ route }) {
     const navigation = useNavigation();
     const [isNavigating, setIsNavigating] = useState(false);
-    const isMockLocationAppDetected = useDetectMockLocationApp();
-
-    const [locationPermissionsInformation, requestPermission] = useForegroundPermissions();
-    const [sessionId, setSessionId] = useState('');
-    const [username, setUsername] = useState('');
-    const [userId, setUserId] = useState('');
-
-    const [profileUser, setProfileUser] = useState([]); // Initialize as empty array
+    const [profileUser, setProfileUser] = useState({});
     const [loading, setLoading] = useState(true);
-
-    const userData = route.params && route.params.userData ? route.params.userData : {};
-    const userEmail = userData.email || 'Guest';
-    const role_id = userData.role_id;
-    const id_pegawai = userData.id_pegawai;
-
-    const [shiftData, setShiftData] = useState(null);
-    const [jam_masukShift, setJam_masukShift] = useState();
-    const [jam_KeluarShift, setJam_KeluarShift] = useState();
+    const [jam_masukShift, setJam_masukShift] = useState('');
+    const [jam_KeluarShift, setJam_KeluarShift] = useState('');
     const [btndisabel, setBtndisabel] = useState(false);
     const [btnPulangDisabel, setBtnPulangDisabel] = useState(false);
+    const [userData, setUserData] = useState(route.params && route.params.userData ? route.params.userData : {});
+    const userEmail = userData.email || 'Guest';
 
     useEffect(() => {
-        const setJamShift = async () => {
-            let masukJamshift = await AsyncStorage.getItem('jam_masuk');
-            let keluarJamshift = await AsyncStorage.getItem('jam_keluar');
-            setJam_masukShift(masukJamshift);
-            setJam_KeluarShift(keluarJamshift);
-        }
-        const focusSubscription = navigation.addListener('focus', () => {
-            setJamShift();
-        });
-    }, [navigation]);
-
-    useEffect(() => {
-        const fetchUserId = async () => {
-            try {
-                const data = await AsyncStorage.getItem('userData');
-                if (data !== null) {
-                    const userData = JSON.parse(data);
-                    setUserId(userData.id_pegawai);
-                    setUserId(userData.role_id);
-                    // console.log(userData.id_pegawai); 
-                    // console.log(userData.role_id); 
-                }
-            } catch (error) {
-                console.error('Error fetching user data:', error);
-            }
-        };
-
         const fetchProfileUser = async () => {
             try {
                 const data = await AsyncStorage.getItem('userData');
@@ -85,23 +46,26 @@ function HalamanUtama({ route }) {
 
                     const imageUrl = `http://hc.baktitimah.co.id/pegawaian/image/profileuser/${responseData.data.image}`;
 
-                    // Log the image URL http://hc.baktitimah.co.id/pegawaian/image/profileuser/6572eb41f44929edc64d000cee576ed3.jpg
-                    // console.log("Image URL:", imageUrl);
                     setProfileUser(responseData.data);
                     setLoading(false);
-                    // console.log("Data Profile:", responseData.data.image);
-
                 }
             } catch (error) {
-                console.error('Error fetching riwayat izin:', error);
-                setLoading(false); // 
+                console.error('Error fetching profile:', error);
+                setLoading(false);
             }
         };
 
-        fetchUserId();
-        fetchProfileUser();
-    }, []);
-    useEffect(() => {
+        const fetchShiftData = async () => {
+            try {
+                const masukJamshift = await AsyncStorage.getItem('jam_masuk');
+                const keluarJamshift = await AsyncStorage.getItem('jam_keluar');
+                setJam_masukShift(masukJamshift);
+                setJam_KeluarShift(keluarJamshift);
+            } catch (error) {
+                console.error('Error fetching shift data:', error);
+            }
+        };
+
         const fetchDatajadwalMasuk = async () => {
             try {
                 const data = await AsyncStorage.getItem('userData');
@@ -111,11 +75,9 @@ function HalamanUtama({ route }) {
                 const apiUrl = `https://hc.baktitimah.co.id/pegawaian/api/API_Absen/dataAbsen_get?id_pegawai=${idPegawai}`;
                 const response = await fetch(apiUrl);
                 const absenData = await response.json();
-                // console.log(response);
 
                 const filterdata = absenData.data;
 
-                // Get today's date with Indonesia time zone in yyyy-MM-dd format
                 const today = new Date().toLocaleDateString('id-ID', {
                     year: 'numeric',
                     month: 'long',
@@ -124,53 +86,72 @@ function HalamanUtama({ route }) {
 
                 let isTodayAbsen = false;
                 filterdata.forEach((item) => {
-                    // Assuming item[4] is in yyyy-MM-dd format
                     if (item[4] == today) {
                         isTodayAbsen = true;
-                        // console.log(item[4]);
                     }
-                    // console.log(item[4]);
                 });
 
                 setBtndisabel(isTodayAbsen);
             } catch (error) {
-                console.error('Error fetching data:', error);
-                // Handle error state if needed
+                console.error('Error fetching data absen:', error);
             }
         };
+
         const fetchDatajadwalKeluar = async () => {
-            const jamKeluar = await AsyncStorage.getItem('jam_keluar');
-            const currentTime = new Date().toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta' });
-            const partst = currentTime.split(".");
-            const hour = partst[0];
-            const minute = partst[1];
-            const second = partst[2];
-            const formattedTime = `${hour}:${minute}:${second}`;
+            try {
+                const jamKeluar = await AsyncStorage.getItem('jam_keluar');
+                const currentTime = new Date().toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta' });
+                const partst = currentTime.split(".");
+                const hour = partst[0];
+                const minute = partst[1];
+                const second = partst[2];
+                const formattedTime = `${hour}:${minute}:${second}`;
 
-            // console.log(jamKeluar);
-            // console.log(formattedTime);
-
-
-            if (formattedTime > jamKeluar) {
-                setBtnPulangDisabel(false);
-            } else {
-                setBtnPulangDisabel(true);
+                if (formattedTime > jamKeluar) {
+                    setBtnPulangDisabel(false);
+                } else {
+                    setBtnPulangDisabel(true);
+                }
+            } catch (error) {
+                console.error('Error fetching data keluar:', error);
             }
-
         };
 
+        const checkToken = async () => {
+            try {
+                const storedUserData = await AsyncStorage.getItem('userData');
+                if (storedUserData) {
+                    const userDataParsed = JSON.parse(storedUserData);
+                    setUserData(userDataParsed);
+                }
 
+                const token = userData ? userData.token : null;
+                console.log('token yang', token);
 
+                if (!token) {
+                    navigation.replace('Login');
+                    return;
+                }
+            } catch (error) {
+                console.error('Error checking token:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
         const focusSubscription = navigation.addListener('focus', () => {
+            fetchProfileUser();
+            fetchShiftData();
             fetchDatajadwalMasuk();
             fetchDatajadwalKeluar();
+            checkToken();
 
         });
 
         return () => {
             focusSubscription();
         };
-    }, [navigation, setBtndisabel, setBtnPulangDisabel]);
+
+    }, [navigation]);
 
     async function verifyPermissions() {
         let { status } = await Location.requestForegroundPermissionsAsync();
@@ -190,8 +171,9 @@ function HalamanUtama({ route }) {
     }
 
     async function buttonAbsensHandler() {
-        if (isNavigating) return; 
+        if (isNavigating) return; // Prevent multiple navigations
         setIsNavigating(true);
+
         try {
             const hasPermission = await verifyPermissions();
             if (!hasPermission) {
@@ -206,7 +188,6 @@ function HalamanUtama({ route }) {
             const apiUrl = `https://hc.baktitimah.co.id/pegawaian/api/API_Absen/dataAbsen_get?id_pegawai=${idPegawai}`;
             const response = await fetch(apiUrl);
             const absenData = await response.json();
-            // console.log(absenData);
             const filterdata = absenData.data;
             let tanggal_absen = [];
 
@@ -214,16 +195,16 @@ function HalamanUtama({ route }) {
                 tanggal_absen.push(item[4]);
             });
 
-
-            const location = await getCurrentPositionAsync({});
+            const location = await Location.getCurrentPositionAsync({});
             console.log(location);
 
             const { latitude, longitude } = location.coords;
-            if (isMockLocationAppDetected) {
+            if (isMockLocation) {
                 Alert.alert('Warning', 'Detected usage of fake GPS location.');
                 setIsNavigating(false);
                 return;
             }
+
             navigation.navigate('HalamanAbsensi', { latitude, longitude });
         } catch (error) {
             Alert.alert('Error', 'Failed to get location.');
@@ -233,26 +214,25 @@ function HalamanUtama({ route }) {
     };
 
     async function buttonAbsensPulangHandler() {
+        if (isNavigating) return; // Prevent multiple navigations
+        setIsNavigating(true);
         try {
-            if (isNavigating) return;
-
-            setIsNavigating(true);
             const hasPermission = await verifyPermissions();
             if (!hasPermission) {
                 setIsNavigating(false);
                 return;
             }
 
-            const location = await getCurrentPositionAsync({});
+            const location = await Location.getCurrentPositionAsync({});
             console.log(location);
-            const { latitude, longitude } = location.coords;
 
-            if (isMockLocationAppDetected) {
+            const { latitude, longitude } = location.coords;
+            if (isMockLocation) {
                 Alert.alert('Warning', 'Detected usage of fake GPS location.');
                 setIsNavigating(false);
                 return;
             }
-            navigation.navigate('HalamanAbsensi', { latitude, longitude });
+            navigation.navigate('HalamanAbsenPulang', { latitude, longitude });
         } catch (error) {
             Alert.alert('Error', 'Failed to get location.');
         } finally {
@@ -260,7 +240,7 @@ function HalamanUtama({ route }) {
         }
     };
 
-    
+
 
     const buttonLogOut2Handler = async (navigation) => {
         try {
