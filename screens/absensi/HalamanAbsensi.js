@@ -110,7 +110,8 @@ function HalamanAbsensi() {
             formData.append('id_pegawai', userData.id_pegawai);
             formData.append('tgl_absen', new Date().toISOString().split('T')[0]);
             formData.append('id_shift', value);
-            formData.append('waktu_masuk', new Date().toLocaleTimeString('en-US', { hour12: false }));
+            // formData.append('waktu_masuk', new Date().toLocaleTimeString('en-US', { hour12: false }));
+            // formData.append('waktu_masuk', new Date(Date.now()).toLocaleTimeString('en-US', { hour12: false }));
             formData.append('longitude', longitude.toString()); 
             formData.append('latitude', latitude.toString());  
 
