@@ -116,6 +116,7 @@ function HalamanUtama({ route }) {
                 console.error('Error fetching data keluar:', error);
             }
         };
+        
 
         const checkToken = async () => {
             try {
