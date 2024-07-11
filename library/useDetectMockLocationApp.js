@@ -12,6 +12,7 @@ const useDetectMockLocationApp = () => {
       if (status !== 'granted') {
         Alert.alert('Permission to access location was denied');
         return;
+        
       }
 
       let location = await Location.getCurrentPositionAsync({});
