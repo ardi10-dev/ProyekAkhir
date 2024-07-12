@@ -32,6 +32,19 @@ const Stack = createNativeStackNavigator();
 const RiwayatStack = createNativeStackNavigator();
 const AprovalStack = createNativeStackNavigator();
 
+const handleNavigation = async () => {
+  try {
+    // Simpan data yang diperlukan ke AsyncStorage sebelum navigasi
+    const userData = { name: 'John Doe' }; // Contoh data
+    await AsyncStorage.setItem('userData', JSON.stringify(userData));
+
+    // Navigasi ke HalamanUtama
+    navigation.replace('HalamanUtama');
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 function RiwayatStackScreen({ navigation }) {
   return (
     <RiwayatStack.Navigator
@@ -53,12 +66,7 @@ function RiwayatStackScreen({ navigation }) {
           headerLeft: () => (
             <TouchableOpacity
               onPress={() =>
-                navigation.dispatch(
-                  CommonActions.reset({
-                    index: 0,
-                    routes: [{ name: 'HalamanUtama' }],
-                  })
-                )
+                navigation.navigate('HalamanUtama')
               }
               style={{
                 backgroundColor: 'transparent',
@@ -80,12 +88,7 @@ function RiwayatStackScreen({ navigation }) {
           headerLeft: () => (
             <TouchableOpacity
               onPress={() =>
-                navigation.dispatch(
-                  CommonActions.reset({
-                    index: 0,
-                    routes: [{ name: 'HalamanRiwayatScreen' }],
-                  })
-                )
+                navigation.navigate('HalamanRiwayatScreen')
               }
               style={{
                 backgroundColor: 'transparent',
@@ -107,12 +110,7 @@ function RiwayatStackScreen({ navigation }) {
           headerLeft: () => (
             <TouchableOpacity
               onPress={() =>
-                navigation.dispatch(
-                  CommonActions.reset({
-                    index: 0,
-                    routes: [{ name: 'HalamanRiwayatScreen' }],
-                  })
-                )
+                navigation.navigate('HalamanRiwayatScreen')
               }
               style={{
                 backgroundColor: 'transparent',
@@ -134,12 +132,7 @@ function RiwayatStackScreen({ navigation }) {
           headerLeft: () => (
             <TouchableOpacity
               onPress={() =>
-                navigation.dispatch(
-                  CommonActions.reset({
-                    index: 0,
-                    routes: [{ name: 'HalamanRiwayatScreen' }],
-                  })
-                )
+                navigation.navigate('HalamanRiwayatScreen')
               }
               style={{
                 backgroundColor: 'transparent',
@@ -161,12 +154,7 @@ function RiwayatStackScreen({ navigation }) {
           headerLeft: () => (
             <TouchableOpacity
               onPress={() =>
-                navigation.dispatch(
-                  CommonActions.reset({
-                    index: 0,
-                    routes: [{ name: 'HalamanRiwayatScreen' }],
-                  })
-                )
+                navigation.navigate('HalamanRiwayatScreen')
               }
               style={{
                 backgroundColor: 'transparent',
@@ -205,12 +193,7 @@ function AprovalStackScreen({ navigation }) {
           headerLeft: () => (
             <TouchableOpacity
               onPress={() =>
-                navigation.dispatch(
-                  CommonActions.reset({
-                    index: 0,
-                    routes: [{ name: 'HalamanUtama' }],
-                  })
-                )
+                navigation.navigate('HalamanUtama')
               }
               style={{
                 backgroundColor: 'transparent',
@@ -259,13 +242,9 @@ function AprovalStackScreen({ navigation }) {
           headerLeft: () => (
             <TouchableOpacity
               onPress={() =>
-                navigation.dispatch(
-                  CommonActions.reset({
-                    index: 0,
-                    routes: [{ name: 'AprovalIzin' }],
-                  })
-                )
+                navigation.navigate('AprovalIzin')
               }
+              
               style={{
                 backgroundColor: 'transparent',
                 padding: 10,
@@ -286,14 +265,9 @@ function AprovalStackScreen({ navigation }) {
           title: 'Approval Cuti Tahunan',
           headerLeft: () => (
             <TouchableOpacity
-              onPress={() =>
-                navigation.dispatch(
-                  CommonActions.reset({
-                    index: 0,
-                    routes: [{ name: 'HalamanAproval' }],
-                  })
-                )
-              }
+            onPress={() =>
+              navigation.navigate('HalamanAproval')
+            }
               style={{
                 backgroundColor: 'transparent',
                 padding: 10,
@@ -314,14 +288,9 @@ function AprovalStackScreen({ navigation }) {
           title: 'Detail Approval Cuti',
           headerLeft: () => (
             <TouchableOpacity
-              onPress={() =>
-                navigation.dispatch(
-                  CommonActions.reset({
-                    index: 0,
-                    routes: [{ name: 'ApprovalCuti' }],
-                  })
-                )
-              }
+            onPress={() =>
+              navigation.navigate('ApprovalCuti')
+            }
               style={{
                 backgroundColor: 'transparent',
                 padding: 10,
@@ -342,14 +311,9 @@ function AprovalStackScreen({ navigation }) {
           title: 'Approval Lembur',
           headerLeft: () => (
             <TouchableOpacity
-              onPress={() =>
-                navigation.dispatch(
-                  CommonActions.reset({
-                    index: 0,
-                    routes: [{ name: 'HalamanAproval' }],
-                  })
-                )
-              }
+            onPress={() =>
+              navigation.navigate('HalamanAproval')
+            }
               style={{
                 backgroundColor: 'transparent',
                 padding: 10,
@@ -370,14 +334,9 @@ function AprovalStackScreen({ navigation }) {
           title: 'Detail Approval Lembur',
           headerLeft: () => (
             <TouchableOpacity
-              onPress={() =>
-                navigation.dispatch(
-                  CommonActions.reset({
-                    index: 0,
-                    routes: [{ name: 'ApprovalLembur' }],
-                  })
-                )
-              }
+            onPress={() =>
+              navigation.navigate('ApprovalLembur')
+            }
               style={{
                 backgroundColor: 'transparent',
                 padding: 10,

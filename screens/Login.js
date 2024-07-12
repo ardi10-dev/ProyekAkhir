@@ -2,7 +2,7 @@ import { View, Text, Image, StyleSheet, SafeAreaView, TextInput, ScrollView, Pre
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CommonActions } from "@react-navigation/native";
 import { PEGAWAI } from "../data/dummy-data";
 
@@ -15,6 +15,51 @@ function Login({ navigation }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setLoading] = useState(false);
+    // const [userData, setUserData] = useState(route.params && route.params.userData ? route.params.userData : {});
+
+
+    useEffect(() => {
+        const checkToken = async () => {
+            try {
+                const storedUserData = await AsyncStorage.getItem('userData');
+                const response = await fetch('https://hc.baktitimah.co.id/pegawaian/api/Login/CekToken',{
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body:JSON.stringify({
+                        token:storedUserData
+                    })
+                })
+                const data = await response.json();
+                console.log(data);
+                if (data.status == 200){
+                    navigation.navigate("HalamanUtama")
+                }
+                else if (data.status == 404){
+                    navigation.navigate("login")
+                }
+                // if (storedUserData) {
+                //     const userDataParsed = JSON.parse(storedUserData);
+                //     setUserData(userDataParsed);
+                // }
+
+                // const token = userData ? userData.token : null;
+                // console.log('token yang di HU', token);
+
+                // if (!token) {
+                //     navigation.replace('Login');
+                //     return;
+                // }
+            } catch (error) {
+                console.error('Error checking token:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        checkToken();
+
+    }, []);
 
     const buttonLoginHandler = async () => {
         setLoading(true); // Set loading indicator

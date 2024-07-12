@@ -26,6 +26,7 @@ function HalamanUtama({ route }) {
     const [btnPulangDisabel, setBtnPulangDisabel] = useState(false);
     const [userData, setUserData] = useState(route.params && route.params.userData ? route.params.userData : {});
     const userEmail = userData.email || 'Guest';
+    const isMockLocation = useDetectMockLocationApp();
 
     useEffect(() => {
         const fetchProfileUser = async () => {
@@ -99,52 +100,57 @@ function HalamanUtama({ route }) {
 
         const fetchDatajadwalKeluar = async () => {
             try {
-                const jamKeluar = await AsyncStorage.getItem('jam_keluar');
+
+                const data = await AsyncStorage.getItem('userData');
+                const userData = JSON.parse(data);
+                const idPegawai = userData.id_pegawai;
+
+                const apiUrl = `https://hc.baktitimah.co.id/pegawaian/api/API_Absen/dataAbsen_get?id_pegawai=${idPegawai}`;
+                const response = await fetch(apiUrl);
+                const absenData = await response.json();
+
+                // const jamKeluar = await AsyncStorage.getItem('jam_keluar');
                 const currentTime = new Date().toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta' });
                 const partst = currentTime.split(".");
                 const hour = partst[0];
                 const minute = partst[1];
                 const second = partst[2];
                 const formattedTime = `${hour}:${minute}:${second}`;
+                console.log('hari ini', formattedTime);
 
-                if (formattedTime > jamKeluar) {
-                    setBtnPulangDisabel(false);
-                } else {
-                    setBtnPulangDisabel(true);
-                }
+                const filterdata = absenData.data;
+
+                let isTodayAbsen2 = true; // Default set to true
+                filterdata.forEach((item) => {
+                    if (formattedTime < item[14]) {
+                        isTodayAbsen2 = false; 
+                    } else {
+                        isTodayAbsen2 = true; 
+                    }
+                    console.log('jam keluar', item[14]);
+                    console.log('jam hari', formattedTime);
+                });
+                setBtnPulangDisabel(!isTodayAbsen2);
+
+                // const jamKeluar='09:00:00'
+                // console.log(jamKeluar);
+                // if (formattedTime > jamKeluar) {
+                //     setBtnPulangDisabel(true);
+                // } else {
+                //     setBtnPulangDisabel(false);
+                // }
             } catch (error) {
                 console.error('Error fetching data keluar:', error);
             }
         };
+
+
         
-
-        const checkToken = async () => {
-            try {
-                const storedUserData = await AsyncStorage.getItem('userData');
-                if (storedUserData) {
-                    const userDataParsed = JSON.parse(storedUserData);
-                    setUserData(userDataParsed);
-                }
-
-                const token = userData ? userData.token : null;
-                console.log('token yang', token);
-
-                if (!token) {
-                    navigation.replace('Login');
-                    return;
-                }
-            } catch (error) {
-                console.error('Error checking token:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
         const focusSubscription = navigation.addListener('focus', () => {
             fetchProfileUser();
             fetchShiftData();
             fetchDatajadwalMasuk();
             fetchDatajadwalKeluar();
-            checkToken();
 
         });
 
@@ -166,10 +172,10 @@ function HalamanUtama({ route }) {
         return true;
     }
 
-    async function isMockLocation() {
-        const { isMocked } = await getCurrentPositionAsync({});
-        return isMocked;
-    }
+    // async function isMockLocation() {
+    //     const { isMocked } = await getCurrentPositionAsync({});
+    //     return isMocked;
+    // }
 
     async function buttonAbsensHandler() {
         if (isNavigating) return; // Prevent multiple navigations
@@ -325,6 +331,7 @@ function HalamanUtama({ route }) {
                                     })}</Text>
                                     <Text style={[{ fontWeight: 'bold', textAlign: 'right', color: 'white', fontSize: 12, }]}> {new Date().toLocaleTimeString('id-ID')} WIB</Text>
                                 </View>
+
 
                             </View>
                         </View>

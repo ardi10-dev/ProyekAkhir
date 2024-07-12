@@ -18,6 +18,8 @@ function RiwayatAbsen() {
     const years = ['all', ...Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - 5 + i).toString())];
     const months = ['All', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
+    
+
     useEffect(() => {
 
         const fetchRiwayatAbsen = async () => {

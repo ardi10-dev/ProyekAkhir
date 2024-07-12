@@ -31,16 +31,49 @@ function NavBottom() {
 
     const buttonLogOut2Handler = async () => {
         try {
-            await AsyncStorage.removeItem('userData');
-            navigation.dispatch(
-                CommonActions.reset({
-                    index: 0,
-                    routes: [{ name: 'Login' }],
+            const storedUserData = await AsyncStorage.getItem('userData');
+            const response = await fetch('https://hc.baktitimah.co.id/pegawaian/api/Login/HapusToken', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    token: storedUserData
                 })
-            );
+            })
+            const data = await response.json();
+            console.log(data);
+            if (data.status == 200) {
+                navigation.navigate("Login")
+            }
+           
+            // if (storedUserData) {
+            //     const userDataParsed = JSON.parse(storedUserData);
+            //     setUserData(userDataParsed);
+            // }
+
+            // const token = userData ? userData.token : null;
+            // console.log('token yang di HU', token);
+
+            // if (!token) {
+            //     navigation.replace('Login');
+            //     return;
+            // }
         } catch (error) {
-            console.error(error);
-        }
+            console.error('Error checking token:', error);
+        } 
+        // try {
+
+        //     await AsyncStorage.removeItem('userData');
+        //     navigation.dispatch(
+        //         CommonActions.reset({
+        //             index: 0,
+        //             routes: [{ name: 'Login' }],
+        //         })
+        //     );
+        // } catch (error) {
+        //     console.error(error);
+        // }
     };
 
     useEffect(() => {
@@ -81,7 +114,7 @@ function NavBottom() {
                         <View style={[styles.column2]}>
                             <Pressable
                                 style={({ pressed }) => [styles.gridItem2, {
-                                    backgroundColor: pressed ? '#white' : '#4C70C4', 
+                                    backgroundColor: pressed ? '#white' : '#4C70C4',
                                 }, pressed && styles.pressedButton]}
                                 onPress={buttonAbsensiHandler}
                             >
