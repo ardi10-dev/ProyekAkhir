@@ -9,6 +9,8 @@ import { Picker } from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import LoadingAlert from "../../components/Loading/LoadingAlert";
+
 
 
 function LemburScreen() {
@@ -29,6 +31,8 @@ function LemburScreen() {
     const [showEndTimePicker, setShowEndTimePicker] = useState(false);
     const [userData, setUserData] = useState(null);
     const [alasan, setAlasan] = useState('');
+    const [loading, setLoading] = useState(false);
+
 
 
     useEffect(() => {
@@ -47,8 +51,10 @@ function LemburScreen() {
 
     const handlePengajuanLembur = async () => {
         try {
+            setLoading(true);
             if (!userData || !userData.id_pegawai) {
                 Alert.alert('Error', 'User data is missing or invalid. Please try again.');
+                setLoading(false);
                 return;
             }
 
@@ -67,7 +73,7 @@ function LemburScreen() {
                 minute: '2-digit',
                 hour12: false
             });
-            
+
             const waktuAkhir = new Date(data.waktu_akhir).toLocaleTimeString('id-ID', {
                 hour: '2-digit',
                 minute: '2-digit',
@@ -115,6 +121,8 @@ function LemburScreen() {
         } catch (error) {
             console.error('API Error:', error);
             Alert.alert('An error occurred', 'Please try again later');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -305,14 +313,14 @@ function LemburScreen() {
                                 <Text style={[{ fontWeight: 'bold' }]}>Mulai</Text>
                             </View>
                             <View style={styles.column}>
-                            <TextInput
+                                <TextInput
                                     style={[styles.input, { color: 'black' }]}
                                     value={formatTimeIndonesia(startTime)}
                                     editable={false}
                                 />
                             </View>
                             <View style={styles.column2}>
-                            <Pressable
+                                <Pressable
                                     style={({ pressed }) => [styles.buttonJam, pressed && styles.pressedButton]}
                                     onPress={handleStartTimePress}
                                 >
@@ -344,7 +352,7 @@ function LemburScreen() {
                                 />
                             </View>
                             <View style={styles.column2}>
-                            <Pressable
+                                <Pressable
                                     style={({ pressed }) => [styles.buttonJam, pressed && styles.pressedButton]}
                                     onPress={handleEndTimePress}
                                 >

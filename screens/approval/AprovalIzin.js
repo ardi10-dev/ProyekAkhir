@@ -18,6 +18,7 @@ function AprovalIzin({ navigation }) {
     const [filteredData, setFilteredData] = useState([]);
     const [riwayatIzin, setRiwayatIzin] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isFocus, setIsFocus] = useState(false);
     // const [userData, setUserData] = useState(null);
 
 
@@ -35,39 +36,40 @@ function AprovalIzin({ navigation }) {
 
         return () => backHandler.remove(); // Cleanup on unmount
     }, [navigation]);
-    useEffect(() => {
+    // useEffect(() => {
 
-        const fetchRiwayatIzin = async () => {
-            try {
-                const data = await AsyncStorage.getItem('userData');
+    //     const fetchRiwayatIzin = async () => {
+    //         try {
+    //             const data = await AsyncStorage.getItem('userData');
 
-                if (data !== null) {
-                    const userData = JSON.parse(data);
-                    const idPegawai = userData.id_pegawai;
-                    // console.log(idPegawai);
+    //             if (data !== null) {
+    //                 const userData = JSON.parse(data);
+    //                 const idPegawai = userData.id_pegawai;
+    //                 // console.log(idPegawai);
 
-                    const apiUrl = `https://hc.baktitimah.co.id/pegawaian/api/API_Izin/getIzinApproval?id_pegawai=${idPegawai}`;
-                    const response = await fetch(apiUrl);
+    //                 const apiUrl = `https://hc.baktitimah.co.id/pegawaian/api/API_Izin/getIzinApproval?id_pegawai=${idPegawai}`;
+    //                 const response = await fetch(apiUrl);
 
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
+    //                 if (!response.ok) {
+    //                     throw new Error('Network response was not ok');
+    //                 }
 
-                    const responseData = await response.json();
-                    const sortedData = responseData.data.sort((a, b) => parseDate(b[4]) - parseDate(a[4]));
-                    setRiwayatIzin(responseData.data);
-                    setFilteredData(responseData.data);
-                    setLoading(false);
-                    // console.log(responseData.data);
-                }
-            } catch (error) {
-                console.error('Error fetching riwayat izin:', error);
-                setLoading(false);
-            }
-        };
+    //                 const responseData = await response.json();
+    //                 const sortedData = responseData.data.sort((a, b) => parseDate(b[4]) - parseDate(a[4]));
+    //                 setRiwayatIzin(responseData.data);
+    //                 setFilteredData(responseData.data);
+    //                 setLoading(false);
+    //                 // console.log(responseData.data);
+    //             }
+    //         } catch (error) {
+    //             console.error('Error fetching riwayat izin:', error);
+    //             setLoading(false);
+    //         }
+    //     };
 
-        fetchRiwayatIzin();
-    }, []);
+    //     fetchRiwayatIzin();
+    // }, []);
+
     useEffect(() => {
         const fetchRiwayatIzin = async () => {
             try {
@@ -103,7 +105,8 @@ function AprovalIzin({ navigation }) {
         });
 
         return focusSubscription;
-    }, [navigation])
+    }, [navigation]);
+
     const handleFilter = () => {
         if (!riwayatIzin.length) return;
 

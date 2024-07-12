@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet } from 'react-native';
 
 
-const TextPanjang = ({ value, onChangeText }) => {
+const TextPanjang = ({ value, onChangeText, }) => {
 
     return (
         <View>
@@ -13,6 +13,7 @@ const TextPanjang = ({ value, onChangeText }) => {
                 textAlignVertical="top"
                 value={value}
                 onChangeText={onChangeText}
+                
             />
         </View>
     );
@@ -30,10 +31,12 @@ const styles = StyleSheet.create({
     },
     input2: {
         borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 8,
+        borderColor: '#4C70C4',
+        borderRadius: 10,
         padding: 10,
-        minHeight: 100, // Tinggi minimum untuk memuat beberapa baris teks
+        marginTop: 10,
+        fontSize: 15,
+        textAlignVertical: 'top',
     },
 
 });

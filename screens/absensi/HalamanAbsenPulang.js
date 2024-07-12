@@ -9,6 +9,8 @@ import HalamanGambar from "./HalamanGambar";
 import LokasiPengguna from "./LokasiPengguna";
 import ModalAbsen from "../../components/ModalAbsen";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import LoadingAlert from "../../components/Loading/LoadingAlert";
+
 
 
 function HalamanAbsenPulang({ navigation ,isPageAbsen}) {
@@ -19,6 +21,8 @@ function HalamanAbsenPulang({ navigation ,isPageAbsen}) {
     const [modalVisible, setModalVisible] = useState(false);
     const [userData, setUserData] = useState(null);
     const [currentTime, setCurrentTime] = useState(new Date());
+    const [loading, setLoading] = useState(false);
+
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -36,7 +40,8 @@ function HalamanAbsenPulang({ navigation ,isPageAbsen}) {
 
     const handleAbsenPulangSubmit = async () => {
         try {
-
+            setLoading(true);
+            
             if (!pickedImage) {
                 throw new Error('Wajib Mengupload Foto');
             }
@@ -73,6 +78,9 @@ function HalamanAbsenPulang({ navigation ,isPageAbsen}) {
         } catch (error) {
             // console.error('Error submitting absensi:', error);
             Alert.alert('Peringatan!!', error.message);
+        }
+        finally {
+            setLoading(false);
         }
     };
 
@@ -155,6 +163,7 @@ useEffect(() => {
                         <Text style={styles.textButton}>Submit</Text>
                     </Pressable>
                 </View>
+                <LoadingAlert visible={loading}/>
                 <ModalAbsen visible={modalVisible} closeModal={closeModal} />
                 {/* <SuccessModal  /> */}
             </ScrollView>

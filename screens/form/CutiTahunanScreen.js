@@ -8,6 +8,7 @@ import { Picker } from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import LoadingAlert from "../../components/Loading/LoadingAlert";
 
 
 
@@ -40,6 +41,9 @@ function CutiTahunanScreen({ route, isPageCuti }) {
     const [sisaCuti, setSisaCuti] = useState(null);
     const [cutiData, setCutiData] = useState(null);
     const [sisaCutiData, setSisaCutiData] = useState({});
+
+    const [loading, setLoading] = useState(false);
+
     useEffect(() => {
         const fetchUserData = async () => {
             try {
@@ -77,7 +81,6 @@ function CutiTahunanScreen({ route, isPageCuti }) {
                 }
             } catch (error) {
                 console.error('Error fetching riwayat Cuti:', error);
-                // setLoading(false);
             }
         };
 
@@ -87,66 +90,75 @@ function CutiTahunanScreen({ route, isPageCuti }) {
 
     const handleAjukanPress = async () => {
         try {
-            if (!userData || !userData.id_pegawai) {
-                Alert.alert('Error', 'User data is missing or invalid. Please try again.');
-                return;
-            }
-
-            const requestData = {
-                id_pegawai: userData.id_pegawai,
-                tgl_pengajuan: new Date().toISOString().split('T')[0],
-                lama: lamaIzin,
-                tgl_mulai: startDate.toISOString().split('T')[0],
-                tgl_akhir: endDate ? endDate.toISOString().split('T')[0] : null,
-                jns_cuti: jenisCuti,
-                pelaksanaan_cuti: pelaksanaanCuti,
-                keterangan: "lll",
-            };
-
-            const url = 'https://hc.baktitimah.co.id/pegawaian/api/API_Cuti/insertCuti';
-
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(requestData),
-            });
-            // console.log(requestData);
-
-            const contentType = response.headers.get('content-type');
-            if (response.ok && contentType && contentType.includes('application/json')) {
-                const result = await response.json();
-                console.log('API Response:', result);
-
-                if (result.status === 'success') {
-                    Alert.alert(
-                        'Success',
-                        'Cuti berhasil diajukan',
-                        [
-                            {
-                                text: 'OK',
-                                onPress: () => {
-                                    // navigation.navigate('HalamanRiwayat', { screen: 'RiwayatPCuti' });
-                                    navigation.navigate('RiwayatStackScreen', { screen: 'RiwayatPCuti' });
-                                },
-                            },
-                        ],
-                        { cancelable: false }
-                    );
-                } else {
-                    Alert.alert('Insert failed', result.message || 'Gagal mengajukan cuti');
-                }
+          console.log("Mengajukan cuti...");
+          setLoading(true);
+    
+          if (!userData || !userData.id_pegawai) {
+            Alert.alert('Error', 'User data is missing or invalid. Please try again.');
+            setLoading(false);
+            return;
+          }
+    
+          const requestData = {
+            id_pegawai: userData.id_pegawai,
+            tgl_pengajuan: new Date().toISOString().split('T')[0],
+            lama: lamaIzin,
+            tgl_mulai: startDate.toISOString().split('T')[0],
+            tgl_akhir: endDate ? endDate.toISOString().split('T')[0] : null,
+            jns_cuti: jenisCuti,
+            pelaksanaan_cuti: pelaksanaanCuti,
+            keterangan: "lll",
+          };
+    
+          console.log("Request data:", requestData);
+    
+          const url = 'https://hc.baktitimah.co.id/pegawaian/api/API_Cuti/insertCuti';
+    
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestData),
+          });
+    
+          console.log("Response received");
+    
+          const contentType = response.headers.get('content-type');
+          if (response.ok && contentType && contentType.includes('application/json')) {
+            const result = await response.json();
+            console.log('API Response:', result);
+    
+            if (result.status === 'success') {
+              Alert.alert(
+                'Success',
+                'Cuti berhasil diajukan',
+                [
+                  {
+                    text: 'OK',
+                    onPress: () => {
+                      navigation.navigate('RiwayatStackScreen', { screen: 'RiwayatPCuti' });
+                    },
+                  },
+                ],
+                { cancelable: false }
+              );
             } else {
-                const errorText = await response.text();
-                console.error('API Error:', errorText);
-                Alert.alert('Insert failed', 'Invalid response from server');
+              Alert.alert('Insert failed', result.message || 'Gagal mengajukan cuti');
             }
+          } else {
+            const errorText = await response.text();
+            console.error('API Error:', errorText);
+            Alert.alert('Insert failed', 'Invalid response from server');
+          }
         } catch (error) {
-            console.error('API Error:', error);
-            Alert.alert('An error occurred', 'Please try again later');
+          console.error('API Error:', error);
+          Alert.alert('An error occurred', 'Please try again later');
+        } finally {
+          console.log("Mengakhiri loading");
+          setLoading(false);
         }
-    };
+      };
 
     const handleStartDateChange = (event, selectedDate) => {
         const currentDate = selectedDate || startDate;
@@ -186,15 +198,15 @@ function CutiTahunanScreen({ route, isPageCuti }) {
     };
 
     const buttonLogOut2Handler = async (navigation) => {
-        
-            navigation.navigate("HalamanUtama");
-            
+
+        navigation.navigate("HalamanUtama");
+
     };
 
     useEffect(() => {
         // if (!isMainPage) return;
         const backAction = () => {
-            Alert.alert("Peringatan!","Apakah Anda ingin keluar? ", [
+            Alert.alert("Peringatan!", "Apakah Anda ingin keluar? ", [
                 {
                     text: "Cancel",
                     onPress: () => null,
@@ -213,7 +225,7 @@ function CutiTahunanScreen({ route, isPageCuti }) {
         return () => backHandler.remove();
     }, [navigation]);
 
-   
+
 
 
     return (
@@ -394,6 +406,7 @@ function CutiTahunanScreen({ route, isPageCuti }) {
                                 >
                                     <Text style={styles.textButton}>Ajukan</Text>
                                 </Pressable>
+                                <LoadingAlert visible={loading}/>
                             </View>
 
                         </View>

@@ -8,6 +8,9 @@ import TextPanjang from "../../components/TextPanjang";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import LoadingAlert from "../../components/Loading/LoadingAlert";
+
+
 
 
 function DispensasiScreen() {
@@ -26,6 +29,9 @@ function DispensasiScreen() {
 
     const [userData, setUserData] = useState(null);
     const [jenisIzinData, setJenisIzinData] = useState([]);
+
+    const [loading, setLoading] = useState(false);
+
 
 
 
@@ -69,8 +75,11 @@ function DispensasiScreen() {
 
     const handlePengajuanIzin = async () => {
         try {
+
+            setLoading(true);
             if (!userData || !userData.id_pegawai) {
                 Alert.alert('Error', 'User data is missing or invalid. Please try again.');
+                setLoading(false);
                 return;
             }
 
@@ -103,7 +112,7 @@ function DispensasiScreen() {
                 if (result.status === 'success') {
                     Alert.alert(
                         'Success',
-                        'Cuti berhasil diajukan',
+                        'Izin berhasil diajukan',
                         [
                             {
                                 text: 'OK',
@@ -125,6 +134,9 @@ function DispensasiScreen() {
         } catch (error) {
             console.error('API Error:', error);
             Alert.alert('An error occurred', 'Please try again later');
+        } finally {
+
+            setLoading(false);
         }
     };
 
@@ -286,6 +298,7 @@ function DispensasiScreen() {
                                 style={[styles.input, { color: 'black' }]}
                                 value={lamaIzin !== null ? `${lamaIzin} hari` : ''}
                                 editable={false}
+
                             />
                         </View>
                         <View>
@@ -340,7 +353,8 @@ function DispensasiScreen() {
                         </View>
                         <View>
                             <Text style={styles.text}>Alasan Izin/Dispensasi: </Text>
-                            <TextPanjang value={alasan} onChangeText={handleChangeAlasan} />
+                            <TextPanjang value={alasan} onChangeText={handleChangeAlasan}
+                                 />
                         </View>
 
                         <View style={[{ marginTop: 20, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }]}>
@@ -354,6 +368,7 @@ function DispensasiScreen() {
                                 >
                                     <Text style={styles.textButton}>Ajukan</Text>
                                 </Pressable>
+                                <LoadingAlert visible={loading} />
                             </View>
 
                         </View>
@@ -381,20 +396,13 @@ const styles = StyleSheet.create({
     },
     input: {
         height: 40,
-        padding: 12,
+        padding: 10,
         borderWidth: 1,
         borderColor: '#4C70C4',
         borderRadius: 10,
         alignItems: 'center',
         marginTop: 10,
         fontSize: 15,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 8,
-        shadowRadius: 0.8,
     },
     column: {
         width: '40%',
@@ -429,6 +437,16 @@ const styles = StyleSheet.create({
     },
     pressedButton: {
         opacity: 0.5,
+    },
+    PickerControl: {
+        height: 40,
+        padding: 12,
+        borderWidth: 1,
+        borderColor: '#4C70C4',
+        borderRadius: 10,
+        marginTop: 10,
+        fontSize: 15,
+        justifyContent: 'center',
     },
 
 });

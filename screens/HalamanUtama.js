@@ -13,6 +13,8 @@ import { ActivityIndicator } from 'react-native';
 import DefaultProfileImage from '../assets/user.png';
 import * as Location from 'expo-location';
 import useDetectMockLocationApp from "../library/useDetectMockLocationApp";
+import LoadingAlert from "../components/Loading/LoadingAlert";
+
 
 
 function HalamanUtama({ route, isMainPage }) {
@@ -30,6 +32,7 @@ function HalamanUtama({ route, isMainPage }) {
 
     const [jamMasukShift, setJamMasukShift] = useState("00:00:00");
     const [jamKeluarShift, setJamKeluarShift] = useState("00:00:00");
+
 
     useEffect(() => {
         const fetchProfileUser = async () => {
@@ -260,6 +263,8 @@ function HalamanUtama({ route, isMainPage }) {
 
     const buttonLogOut2Handler = async (navigation) => {
         try {
+            setLoading(true);
+
             const storedUserData = await AsyncStorage.getItem('userData');
             const response = await fetch('https://hc.baktitimah.co.id/pegawaian/api/Login/HapusToken', {
                 method: 'POST',
@@ -290,6 +295,8 @@ function HalamanUtama({ route, isMainPage }) {
             // }
         } catch (error) {
             console.error('Error checking token:', error);
+        }finally {
+            setLoading(false);
         }
     };
 
@@ -302,7 +309,7 @@ function HalamanUtama({ route, isMainPage }) {
                     onPress: () => null,
                     style: "cancel"
                 },
-                { text: "YES", onPress: () => buttonLogOut2Handler(navigation) }
+                { text: "YES", onPress: () => buttonLogOut2Handler(navigation) ,}
             ]);
             return true;
         };
@@ -433,8 +440,8 @@ function HalamanUtama({ route, isMainPage }) {
             <ScrollView style={[{ marginTop: 20 }]}>
                 <View style={{ alignItems: 'center' }}>
                     <CardMenu role_id={profileUser.role_id} />
-
                 </View>
+                <LoadingAlert visible={loading} />
             </ScrollView>
 
             <NavBottom style={styles.posisiFixed} />

@@ -51,9 +51,14 @@ function ApprovalCuti() {
             }
         };
 
-        fetchRiwayatAppCuti();
-    }, []); // Only fetch once on mount
+        const focusSubscription = navigation.addListener('focus', () => {
+            fetchRiwayatAppCuti();
+        });
 
+        return focusSubscription;
+    }, [navigation]);
+
+    
     useEffect(() => {
         const backAction = () => {
             navigation.navigate("HalamanAproval");

@@ -7,6 +7,8 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import TextPanjang from "../../components/TextPanjang";
 import { useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import LoadingAlert from "../../components/Loading/LoadingAlert";
+
 
 
 function DetailAprovalIzin({ route, navigation }) {
@@ -14,6 +16,8 @@ function DetailAprovalIzin({ route, navigation }) {
     const [dataDetail, setDataDetail] = useState();
     const userData = route.params && route.params.userData ? route.params.userData : {};
     const [alasan, setAlasan] = useState('');
+    const [loading, setLoading] = useState(false);
+
 
 
 
@@ -33,6 +37,7 @@ function DetailAprovalIzin({ route, navigation }) {
     // };
     const fetchData = async () => {
         try {
+
             const id_pegawai_izin = route.params.id;
             // console.log(id_pegawai_izin);
             const response = await fetch('https://hc.baktitimah.co.id/pegawaian/api/API_Izin/getDetailIzinApproval', {
@@ -62,6 +67,12 @@ function DetailAprovalIzin({ route, navigation }) {
 
     const buttonMenuDetail = async () => {
         try {
+            if (!alasan.trim()) {
+                Alert.alert('Peringatan', 'Silakan isi catatan sebelum menyetujui.');
+                return;
+            }
+            setLoading(true);
+
             const data = await AsyncStorage.getItem('userData');
             const userData = JSON.parse(data);
             const id_pegawai_izin = route.params.id;
@@ -72,6 +83,7 @@ function DetailAprovalIzin({ route, navigation }) {
 
             if (dataDetail && (dataDetail[0]?.status === '1' || dataDetail[0]?.status === '2')) {
                 Alert.alert('Tidak dapat diapprove lagi');
+                setLoading(false);
                 return;
             }
 
@@ -130,11 +142,19 @@ function DetailAprovalIzin({ route, navigation }) {
         } catch (error) {
             console.error('API Error:', error);
             Alert.alert('An error occurred', 'Please try again later');
+        } finally {
+            setLoading(false);
         }
     };
 
     const buttonMenuDetailTolak = async () => {
         try {
+            if (!alasan.trim()) {
+                Alert.alert('Peringatan', 'Silakan isi catatan sebelum menyetujui.');
+                return;
+            }
+            setLoading(true);
+
             const data = await AsyncStorage.getItem('userData');
             const userData = JSON.parse(data);
             const id_pegawai_izin = route.params.id;
@@ -145,6 +165,7 @@ function DetailAprovalIzin({ route, navigation }) {
 
             if (dataDetail && (dataDetail[0]?.status === '1' || dataDetail[0]?.status === '2')) {
                 Alert.alert('Tidak dapat diapprove lagi');
+                setLoading(false);
                 return;
             }
 
@@ -203,6 +224,8 @@ function DetailAprovalIzin({ route, navigation }) {
         } catch (error) {
             console.error('API Error:', error);
             Alert.alert('An error occurred', 'Please try again later');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -297,6 +320,8 @@ function DetailAprovalIzin({ route, navigation }) {
                             >
                                 <Text style={styles.textButton}>APPROVE</Text>
                             </Pressable>
+                            <LoadingAlert visible={loading} />
+
                         </View>
 
                     </View>

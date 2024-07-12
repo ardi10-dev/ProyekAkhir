@@ -7,6 +7,8 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import TextPanjang from "../../components/TextPanjang";
 import { useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import LoadingAlert from "../../components/Loading/LoadingAlert";
+
 
 
 function DetailApprovalCuti({ route, navigation }) {
@@ -14,6 +16,9 @@ function DetailApprovalCuti({ route, navigation }) {
     const [dataDetail, setDataDetail] = useState();
     const userData = route.params && route.params.userData ? route.params.userData : {};
     const [alasan, setAlasan] = useState('');
+    const [loading, setLoading] = useState(false);
+
+
     const buttonLogOut2Handler = async (navigation) => {
 
         navigation.navigate("ApprovalCuti");
@@ -43,20 +48,7 @@ function DetailApprovalCuti({ route, navigation }) {
     }, [navigation]);
 
 
-    // const fetchUserId = async () => {
-    //     try {
-    //         const data = await AsyncStorage.getItem('userData');
-    //         if (data !== null) {
-    //             const userData = JSON.parse(data);
-    //             setUserId(userData.id_pegawai);
-    //             setUserId(userData.role_id);
-    //             // console.log(userData.id_pegawai); 
-    //             // console.log(userData.role_id); 
-    //         }
-    //     } catch (error) {
-    //         console.error('Error fetching user data:', error);
-    //     }
-    // };
+    
     const fetchData = async () => {
         try {
             const id_pegawai_cuti = route.params.id;
@@ -88,16 +80,24 @@ function DetailApprovalCuti({ route, navigation }) {
 
     const buttonMenuDetail = async () => {
         try {
+            if (!alasan.trim()) { 
+                Alert.alert('Peringatan', 'Silakan isi catatan sebelum menyetujui.');
+                return;
+            }
+            setLoading(true);
+            
             const data = await AsyncStorage.getItem('userData');
             const userData = JSON.parse(data);
             const id_pegawai_cuti = route.params.id;
 
             if (!id_pegawai_cuti) {
                 throw new Error('id_pegawai_izin is missing');
+                
             }
 
             if (dataDetail && (dataDetail[0]?.status === '1' || dataDetail[0]?.status === '2')) {
                 Alert.alert('Tidak dapat diapprove lagi');
+                setLoading(false);
                 return;
             }
 
@@ -156,11 +156,20 @@ function DetailApprovalCuti({ route, navigation }) {
         } catch (error) {
             console.error('API Error:', error);
             Alert.alert('An error occurred', 'Please try again later');
+        }finally {
+            setLoading(false);
         }
     };
 
     const buttonMenuDetailTolak = async () => {
         try {
+            if (!alasan.trim()) { 
+                Alert.alert('Peringatan', 'Silakan isi catatan sebelum menyetujui.');
+                return;
+            }
+
+            setLoading(true);
+
             const data = await AsyncStorage.getItem('userData');
             const userData = JSON.parse(data);
             const id_pegawai_cuti = route.params.id;
@@ -171,6 +180,7 @@ function DetailApprovalCuti({ route, navigation }) {
 
             if (dataDetail && (dataDetail[0]?.status === '1' || dataDetail[0]?.status === '2')) {
                 Alert.alert('Tidak dapat diapprove lagi');
+                setLoading(false);
                 return;
             }
 
@@ -229,6 +239,8 @@ function DetailApprovalCuti({ route, navigation }) {
         } catch (error) {
             console.error('API Error:', error);
             Alert.alert('An error occurred', 'Please try again later');
+        }finally {
+            setLoading(false);
         }
     };
 
@@ -295,6 +307,7 @@ function DetailApprovalCuti({ route, navigation }) {
                             >
                                 <Text style={styles.textButton}>APPROVE</Text>
                             </Pressable>
+                            <LoadingAlert visible={loading}/>
                         </View>
 
                     </View>

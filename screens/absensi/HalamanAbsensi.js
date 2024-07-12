@@ -9,6 +9,8 @@ import HalamanGambar from "./HalamanGambar";
 import LokasiPengguna from "./LokasiPengguna";
 import ModalAbsen from "../../components/ModalAbsen";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import LoadingAlert from "../../components/Loading/LoadingAlert";
+
 
 function HalamanAbsensi({ isPageAbsen }) {
     const navigation = useNavigation();
@@ -26,6 +28,9 @@ function HalamanAbsensi({ isPageAbsen }) {
     const { latitude, longitude } = route.params;
     const [valueShiftMasuk, setValueShiftMasuk] = useState();
     const [valueShiftKeluar, setValueShiftKeluar] = useState();
+
+    const [loading, setLoading] = useState(false);
+
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -90,6 +95,8 @@ function HalamanAbsensi({ isPageAbsen }) {
 
     const handleAbsensiSubmit = async () => {
         try {
+            setLoading(true);
+
             if (!value) {
                 throw new Error('Jam Kerja Harus Dipilih.');
             }
@@ -134,6 +141,8 @@ function HalamanAbsensi({ isPageAbsen }) {
         } catch (error) {
             // console.error('Error submitting absensi:', error);
             Alert.alert('Peringatan!!', error.message);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -160,8 +169,14 @@ function HalamanAbsensi({ isPageAbsen }) {
     };
 
     const buttonLogOut2Handler = async (navigation) => {
+        try {
+            setLoading(true);
+            navigation.navigate("HalamanUtama");
+        } catch {
+            setLoading(false);
+        }
 
-        navigation.navigate("HalamanUtama");
+
 
     };
 
@@ -255,7 +270,9 @@ function HalamanAbsensi({ isPageAbsen }) {
                         <Text style={styles.textButton}>Submit</Text>
                     </Pressable>
                 </View>
+                <LoadingAlert visible={loading} />
                 <ModalAbsen visible={modalVisible} closeModal={closeModal} />
+
                 {/* <SuccessModal  /> */}
             </ScrollView>
         </SafeAreaView>
