@@ -125,13 +125,6 @@ function HalamanUtama({ route, isMainPage }) {
 
                 let isTodayAbsen2 = true; // Default set to true
                 filterdata.forEach((item) => {
-                    const dateItem14 = new Date(item[14]);
-                    const dateFormattedTime = new Date(formattedTime);
-
-                    const jamLebih = dateFormattedTime.getTime() - dateItem14.getTime();
-                    console.log('jam lebih', jamLebih);
-                    console.log('formattedTime:', formattedTime);
-                    console.log('item[14]:', item[14]);
 
                     if (formattedTime <= item[14]) {
                         isTodayAbsen2 = false;

@@ -24,45 +24,58 @@ function Login({ navigation }) {
         const checkToken = async () => {
             try {
                 const storedUserData = await AsyncStorage.getItem('userData');
-    
-                // if (!storedUserData) {
-                //     navigation.replace('Login');
-                //     return;
-                // }
-    
+                const userData = storedUserData ? JSON.parse(storedUserData) : null;
+
+                if (!userData || !userData.token) {
+                    
+                    navigation.navigate('Login');
+                    return;
+                }
                 const response = await fetch('https://hc.baktitimah.co.id/pegawaian/api/Login/CekToken', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        token: storedUserData
+                        token: userData.token
                     })
-                });
-    
+                })
                 const data = await response.json();
                 console.log(data);
-    
-                if (data.status === 200) {
-                    navigation.navigate("HalamanUtama");
-                } else if (data.status === 404) {
-                    navigation.navigate("Login");
+                if (data.status == 200) {
+                    navigation.navigate("HalamanUtama")
                 }
+                else if (data.status == 404) {
+                    navigation.navigate("Login")
+                }
+                // if (storedUserData) {
+                //     const userDataParsed = JSON.parse(storedUserData);
+                //     setUserData(userDataParsed);
+                // }
+
+                // const token = userData ? userData.token : null;
+                // console.log('token yang di HU', token);
+
+                // if (!token) {
+                //     navigation.replace('Login');
+                //     return;
+                // }
             } catch (error) {
                 console.error('Error checking token:', error);
             } finally {
-                // Assuming setLoading is defined as state
-                // setLoading(false);
+                setLoading(false);
             }
         };
-    
         checkToken();
-    }, []); 
+
+    }, []);
 
     const buttonLoginHandler = async () => {
         setLoading(true); // Set loading indicator
 
         try {
+
+
             const url = `https://hc.baktitimah.co.id/pegawaian/api/Login/login?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
 
             const response = await fetch(url, {
