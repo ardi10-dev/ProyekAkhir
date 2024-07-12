@@ -146,6 +146,7 @@ function RiwayatStackScreen({ navigation }) {
           ),
         }}
       />
+      
       <RiwayatStack.Screen
         name="RiwayatLembur"
         component={RiwayatLembur}
@@ -153,9 +154,7 @@ function RiwayatStackScreen({ navigation }) {
           title: 'Riwayat Pengajuan Lembur',
           headerLeft: () => (
             <TouchableOpacity
-              onPress={() =>
-                navigation.navigate('HalamanRiwayatScreen')
-              }
+              onPress={() => navigation.navigate('HalamanRiwayatScreen')}
               style={{
                 backgroundColor: 'transparent',
                 padding: 10,

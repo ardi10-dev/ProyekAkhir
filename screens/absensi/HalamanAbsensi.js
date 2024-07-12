@@ -1,6 +1,6 @@
-import { View, Text, Image, StyleSheet, SafeAreaView, ScrollView, Pressable, Alert } from "react-native";
+import { View, Text, Image, StyleSheet, SafeAreaView, ScrollView, Pressable, Alert, BackHandler } from "react-native";
 import React, { useState, useEffect } from 'react';
-import { useRoute , useNavigation } from '@react-navigation/native';
+import { useRoute, useNavigation } from '@react-navigation/native';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { Dropdown } from 'react-native-element-dropdown';
@@ -10,7 +10,7 @@ import LokasiPengguna from "./LokasiPengguna";
 import ModalAbsen from "../../components/ModalAbsen";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-function HalamanAbsensi() {
+function HalamanAbsensi({ isPageAbsen }) {
     const navigation = useNavigation();
     const navigate = (route) => navigation.navigate(route);
     const route = useRoute();
@@ -76,7 +76,7 @@ function HalamanAbsensi() {
             });
             const data = await response.json();
             // console.log(data.data);
-    
+
             for (const item of data.data) {
                 if (item.id_shift === idshift) {
                     await AsyncStorage.setItem('jam_masuk', item.waktu_masuk);
@@ -87,7 +87,7 @@ function HalamanAbsensi() {
             console.log(err);
         }
     }
-    
+
     const handleAbsensiSubmit = async () => {
         try {
             if (!value) {
@@ -112,8 +112,8 @@ function HalamanAbsensi() {
             formData.append('id_shift', value);
             // formData.append('waktu_masuk', new Date().toLocaleTimeString('en-US', { hour12: false }));
             // formData.append('waktu_masuk', new Date(Date.now()).toLocaleTimeString('en-US', { hour12: false }));
-            formData.append('longitude', longitude.toString()); 
-            formData.append('latitude', latitude.toString());  
+            formData.append('longitude', longitude.toString());
+            formData.append('latitude', latitude.toString());
 
             console.log("FormData content:", formData);
 
@@ -130,7 +130,7 @@ function HalamanAbsensi() {
 
             const responseData = await response.json();
             console.log(responseData);
-            setModalVisible(true); 
+            setModalVisible(true);
         } catch (error) {
             // console.error('Error submitting absensi:', error);
             Alert.alert('Peringatan!!', error.message);
@@ -159,7 +159,35 @@ function HalamanAbsensi() {
         setPickedImage(imageUri);
     };
 
-    
+    const buttonLogOut2Handler = async (navigation) => {
+
+        navigation.navigate("HalamanUtama");
+
+    };
+
+    useEffect(() => {
+        // if (!isMainPage) return;
+        const backAction = () => {
+            Alert.alert("Peringatan!", "Apakah Anda ingin keluar? ", [
+                {
+                    text: "Cancel",
+                    onPress: () => null,
+                    style: "cancel"
+                },
+                { text: "YES", onPress: () => buttonLogOut2Handler(navigation) }
+            ]);
+            return true;
+        };
+
+        const backHandler = BackHandler.addEventListener(
+            "hardwareBackPress",
+            backAction
+        );
+
+        return () => backHandler.remove();
+    }, [navigation]);
+
+
 
 
 

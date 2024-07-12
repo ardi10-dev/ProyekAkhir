@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Pressable, FlatList } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, Pressable, FlatList, Alert, BackHandler} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 // import CardIzin from '../../components/CardIzin';
 import CardBox from '../../components/CardBox';
 import { ActivityIndicator } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+
+
 
 function RiwayatAbsen() {
-
+    const navigation = useNavigation();
     const [selectedYear, setSelectedYear] = useState('all');
     const [selectedMonth, setSelectedMonth] = useState('all');
     const [filteredData, setFilteredData] = useState([]);
@@ -18,10 +21,7 @@ function RiwayatAbsen() {
     const years = ['all', ...Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - 5 + i).toString())];
     const months = ['All', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
-    
-
     useEffect(() => {
-
         const fetchRiwayatAbsen = async () => {
             try {
                 const data = await AsyncStorage.getItem('userData');
@@ -29,8 +29,6 @@ function RiwayatAbsen() {
                 if (data !== null) {
                     const userData = JSON.parse(data);
                     const idPegawai = userData.id_pegawai;
-                    // console.log(idPegawai);
-
                     const apiUrl = `https://hc.baktitimah.co.id/pegawaian/api/API_Absen/dataAbsen_get?id_pegawai=${idPegawai}`;
                     const response = await fetch(apiUrl);
 
@@ -42,16 +40,25 @@ function RiwayatAbsen() {
                     setRiwayatAbsen(responseData.data); // Set data riwayat izin ke state
                     setFilteredData(responseData.data);
                     setLoading(false); // Stop loading indicator
-                    // console.log(responseData.data);
                 }
             } catch (error) {
-                // console.error('Error fetching riwayat izin:', error);
                 setLoading(false); // Stop loading indicator on error
             }
         };
 
         fetchRiwayatAbsen();
     }, []);
+
+    useEffect(() => {
+        const backAction = () => {
+            navigation.navigate("HalamanRiwayatScreen");
+            return true; 
+        };
+
+        const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
+
+        return () => backHandler.remove(); // Cleanup on unmount
+    }, [navigation]);
 
     const handleFilter = () => {
         if (!riwayatAbsen.length) return;
@@ -77,7 +84,7 @@ function RiwayatAbsen() {
         return new Date(year, monthIndex, day);
     };
 
-    function renderRiwayatAbsen({ item }) {
+    const renderRiwayatAbsen = ({ item }) => {
         const nama = item[3] || ''; 
         const nip = item[2] || ''; 
         const ketIn = item[9] || '-';        
@@ -86,7 +93,6 @@ function RiwayatAbsen() {
         const jam_masuk = item[7] || ''; 
         const jam_keluar = item[8] || ''; 
 
-        // console.log(ketIn);
         return (
             <CardBox
                 key={item[0]} 
@@ -99,7 +105,7 @@ function RiwayatAbsen() {
                 jam_keluar={jam_keluar}
             />
         );
-    }
+    };
 
     if (loading) {
         return (
@@ -108,6 +114,7 @@ function RiwayatAbsen() {
             </View>
         );
     }
+    
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: '#E7F4FE' }]}>

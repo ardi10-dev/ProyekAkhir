@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useFocusEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Pressable, FlatList } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, Pressable, FlatList, BackHandler } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -8,10 +8,12 @@ import { ActivityIndicator } from 'react-native';
 import CardIzinApprove from '../../components/CardIzinApprove';
 import CardCutiApprove from '../../components/CardCutiApprove';
 import CardAppLembur from '../../components/CardAppLembur';
+import { useNavigation } from '@react-navigation/native';
 
 
 
-function ApprovalLembur({ route, navigation }) {
+function ApprovalLembur({ route }) {
+    const navigation = useNavigation();
 
     const [selectedYear, setSelectedYear] = useState('all');
     const [selectedMonth, setSelectedMonth] = useState('all');
@@ -25,7 +27,16 @@ function ApprovalLembur({ route, navigation }) {
 
     const years = ['all', ...Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - 5 + i).toString())];
     const months = ['All', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    useEffect(() => {
+        const backAction = () => {
+            navigation.navigate("HalamanAproval");
+            return true; 
+        };
 
+        const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
+
+        return () => backHandler.remove(); // Cleanup on unmount
+    }, [navigation]);
 
     useEffect(() => {
         const fetchRiwayatAppCuti = async () => {

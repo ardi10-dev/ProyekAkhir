@@ -1,72 +1,69 @@
-import React, { useState, useEffect, useFocusEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Pressable, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, Pressable, FlatList, BackHandler, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import CardIzin from '../../components/CardIzin';
-import { ActivityIndicator } from 'react-native';
-import CardIzinApprove from '../../components/CardIzinApprove';
 import CardCutiApprove from '../../components/CardCutiApprove';
+import { useNavigation } from '@react-navigation/native';
 
-
-
-function ApprovalCuti({ route, navigation }) {
-
+function ApprovalCuti() {
+    const navigation = useNavigation();
+    
     const [selectedYear, setSelectedYear] = useState('all');
     const [selectedMonth, setSelectedMonth] = useState('all');
     const [filteredData, setFilteredData] = useState([]);
     const [riwayatAppCuti, setRiwayatAppCuti] = useState([]);
     const [loading, setLoading] = useState(true);
-    // const [userData, setUserData] = useState(null);
-
-
-
-
+    
     const years = ['all', ...Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - 5 + i).toString())];
     const months = ['All', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
-
     useEffect(() => {
         const fetchRiwayatAppCuti = async () => {
+            setLoading(true); // Set loading before fetching
             try {
                 const data = await AsyncStorage.getItem('userData');
-
-                if (data !== null) {
+                if (data) {
                     const userData = JSON.parse(data);
                     const idPegawai = userData.id_pegawai;
-                    console.log(idPegawai);
 
                     const response = await fetch('https://hc.baktitimah.co.id/pegawaian/api/API_Cuti/getCutiApproval', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded', // Perhatikan perubahan di sini
+                            'Content-Type': 'application/x-www-form-urlencoded',
                         },
-                        body: `id_pegawai=${idPegawai}` // Dan di sini
+                        body: `id_pegawai=${idPegawai}`
                     });
+
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
                     }
 
                     const responseData = await response.json();
                     const sortedData = responseData.data.sort((a, b) => parseDate(b[4]) - parseDate(a[4]));
-                    setRiwayatAppCuti(responseData.data);
-                    setFilteredData(responseData.data);
-                    setLoading(false);
-                    // console.log(responseData.data);
+                    setRiwayatAppCuti(sortedData);
+                    setFilteredData(sortedData);
                 }
             } catch (error) {
                 console.error('Error fetching riwayat izin:', error);
+            } finally {
                 setLoading(false);
             }
         };
 
-        const focusSubscription = navigation.addListener('focus', () => {
-            fetchRiwayatAppCuti();
-        });
+        fetchRiwayatAppCuti();
+    }, []); // Only fetch once on mount
 
-        return focusSubscription;
-    }, [navigation])
+    useEffect(() => {
+        const backAction = () => {
+            navigation.navigate("HalamanAproval");
+            return true; 
+        };
 
+        const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
+
+        return () => backHandler.remove(); // Cleanup on unmount
+    }, [navigation]);
 
     const handleFilter = () => {
         if (!riwayatAppCuti.length) return;
@@ -92,7 +89,7 @@ function ApprovalCuti({ route, navigation }) {
         return new Date(year, monthIndex, day);
     };
 
-    function renderRiwayatIzin({ item }) {
+    const renderRiwayatIzin = ({ item }) => {
         const Id_pegawai_cuti = item[11] || '';
         const nama = item[3] || '';
         const nip = item[2] || '';
@@ -101,9 +98,6 @@ function ApprovalCuti({ route, navigation }) {
         const tanggal = item[4] || '';
         const tgl_mulai = item[6] || '';
         const tgl_akhir = item[7] || '';
-
-        // console.log(Id_pegawai_cuti);
-
 
         return (
             <CardCutiApprove
@@ -118,7 +112,7 @@ function ApprovalCuti({ route, navigation }) {
                 tgl_akhir={tgl_akhir}
             />
         );
-    }
+    };
 
     if (loading) {
         return (
@@ -170,16 +164,17 @@ function ApprovalCuti({ route, navigation }) {
             </View>
 
             <FlatList
-                data={filteredData.length > 0 ? filteredData : []} // Only display filteredData if available
+                data={filteredData.length > 0 ? filteredData : []}
                 keyExtractor={(item, index) => index.toString()}
                 renderItem={renderRiwayatIzin}
-                ListEmptyComponent={<Text>No data found</Text>} // Display message when there's no data
+                ListEmptyComponent={<Text>No data found</Text>}
             />
         </SafeAreaView>
     );
 }
 
 export default ApprovalCuti;
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -204,11 +199,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         justifyContent: 'center',
         paddingHorizontal: 10,
-        backgroundColor: 'white', // Optional: to ensure the picker is on a white background
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.8,
-        shadowRadius: 0.8,
+        backgroundColor: 'white',
     },
     picker: {
         height: 40,
@@ -227,6 +218,4 @@ const styles = StyleSheet.create({
     pressedButton: {
         opacity: 0.7,
     },
-
-
 });

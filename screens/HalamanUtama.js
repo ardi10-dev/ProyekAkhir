@@ -15,7 +15,7 @@ import * as Location from 'expo-location';
 import useDetectMockLocationApp from "../library/useDetectMockLocationApp";
 
 
-function HalamanUtama({ route }) {
+function HalamanUtama({ route, isMainPage }) {
     const navigation = useNavigation();
     const [isNavigating, setIsNavigating] = useState(false);
     const [profileUser, setProfileUser] = useState({});
@@ -27,6 +27,9 @@ function HalamanUtama({ route }) {
     const [userData, setUserData] = useState(route.params && route.params.userData ? route.params.userData : {});
     const userEmail = userData.email || 'Guest';
     const isMockLocation = useDetectMockLocationApp();
+
+    const [jamMasukShift, setJamMasukShift] = useState("00:00:00");
+    const [jamKeluarShift, setJamKeluarShift] = useState("00:00:00");
 
     useEffect(() => {
         const fetchProfileUser = async () => {
@@ -122,15 +125,21 @@ function HalamanUtama({ route }) {
 
                 let isTodayAbsen2 = true; // Default set to true
                 filterdata.forEach((item) => {
-                    if (formattedTime < item[14]) {
-                        isTodayAbsen2 = false; 
-                    } else {
-                        isTodayAbsen2 = true; 
+                    
+                    if (formattedTime <= item[14]) {
+                        isTodayAbsen2 = false;
                     }
-                    console.log('jam keluar', item[14]);
-                    console.log('jam hari', formattedTime);
+                    else {
+                        isTodayAbsen2 = true;
+                    }
+                    // console.log('jam keluar', item[14]);
+                    // console.log('jam hari', formattedTime);
+
+
                 });
                 setBtnPulangDisabel(!isTodayAbsen2);
+
+
 
                 // const jamKeluar='09:00:00'
                 // console.log(jamKeluar);
@@ -145,7 +154,7 @@ function HalamanUtama({ route }) {
         };
 
 
-        
+
         const focusSubscription = navigation.addListener('focus', () => {
             fetchProfileUser();
             fetchShiftData();
@@ -266,7 +275,7 @@ function HalamanUtama({ route }) {
             if (data.status == 200) {
                 navigation.navigate("Login")
             }
-           
+
             // if (storedUserData) {
             //     const userDataParsed = JSON.parse(storedUserData);
             //     setUserData(userDataParsed);
@@ -281,12 +290,13 @@ function HalamanUtama({ route }) {
             // }
         } catch (error) {
             console.error('Error checking token:', error);
-        } 
+        }
     };
 
     useEffect(() => {
+        // if (!isMainPage) return;
         const backAction = () => {
-            Alert.alert("Hold on!", "Are you sure you want to go back?", [
+            Alert.alert("Apakah Anda ingin keluar? ", "Mohon menggunakan button back diatas", [
                 {
                     text: "Cancel",
                     onPress: () => null,

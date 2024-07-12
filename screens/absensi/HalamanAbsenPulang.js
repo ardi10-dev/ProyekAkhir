@@ -1,4 +1,4 @@
-import { View, Text, Image, StyleSheet, SafeAreaView, ScrollView, Pressable, Alert } from "react-native";
+import { View, Text, Image, StyleSheet, SafeAreaView, ScrollView, Pressable, Alert , BackHandler} from "react-native";
 import React, { useState, useEffect } from 'react';
 import { useRoute } from '@react-navigation/native';
 
@@ -11,7 +11,7 @@ import ModalAbsen from "../../components/ModalAbsen";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
-function HalamanAbsenPulang({ navigation }) {
+function HalamanAbsenPulang({ navigation ,isPageAbsen}) {
 
     const route = useRoute();
     const [pickedImage, setPickedImage] = useState(null);
@@ -87,6 +87,33 @@ function HalamanAbsenPulang({ navigation }) {
         console.log('Image URI received:', imageUri);
         setPickedImage(imageUri);
     };
+    const buttonLogOut2Handler = async (navigation) => {
+        
+        navigation.navigate("HalamanUtama");
+        
+};
+
+useEffect(() => {
+    // if (!isMainPage) return;
+    const backAction = () => {
+        Alert.alert("Peringatan!","Apakah Anda ingin keluar? ", [
+            {
+                text: "Cancel",
+                onPress: () => null,
+                style: "cancel"
+            },
+            { text: "YES", onPress: () => buttonLogOut2Handler(navigation) }
+        ]);
+        return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        backAction
+    );
+
+    return () => backHandler.remove();
+}, [navigation]);
 
 
     return (

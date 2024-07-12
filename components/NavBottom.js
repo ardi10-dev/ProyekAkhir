@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, SafeAreaView, ScrollView, Pressable, Platform, BackHandler } from "react-native";
+import { View, Text, Image, StyleSheet, SafeAreaView, ScrollView, Pressable, Platform, BackHandler, Alert } from "react-native";
 import { AntDesign } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -76,26 +76,26 @@ function NavBottom() {
         // }
     };
 
-    useEffect(() => {
-        const backAction = () => {
-            Alert.alert("Hold on!", "Are you sure you want to log out?", [
-                {
-                    text: "Cancel",
-                    onPress: () => null,
-                    style: "cancel"
-                },
-                { text: "YES", onPress: buttonLogOut2Handler }
-            ]);
-            return true;
-        };
+    // useEffect(() => {
+    //     const backAction = () => {
+    //         Alert.alert("Hold on!", "Apakah Anda ingin Keluar Aplikasi?", [
+    //             {
+    //                 text: "Cancel",
+    //                 onPress: () => null,
+    //                 style: "cancel"
+    //             },
+    //             { text: "YES", onPress: buttonLogOut2Handler }
+    //         ]);
+    //         return true;
+    //     };
 
-        const backHandler = BackHandler.addEventListener(
-            "hardwareBackPress",
-            backAction
-        );
+    //     const backHandler = BackHandler.addEventListener(
+    //         "hardwareBackPress",
+    //         backAction
+    //     );
 
-        return () => backHandler.remove();
-    }, [navigation]);
+    //     return () => backHandler.remove();
+    // }, [navigation]);
 
     return (
         <View style={[styles.container]}>

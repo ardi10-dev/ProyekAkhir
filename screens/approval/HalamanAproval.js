@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, Pressable, StyleSheet } from "react-native";
+import { View, Text, SafeAreaView, Pressable, StyleSheet , BackHandler} from "react-native";
 import React, { useState, useEffect } from 'react';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -28,6 +28,17 @@ function HalamanAproval() {
             clearInterval(timer);
         };
     }, []);
+
+    useEffect(() => {
+        const backAction = () => {
+            navigation.navigate("HalamanUtama");
+            return true; 
+        };
+
+        const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
+
+        return () => backHandler.remove(); // Cleanup on unmount
+    }, [navigation]);
 
     return (
         <SafeAreaView style={styles.container}>

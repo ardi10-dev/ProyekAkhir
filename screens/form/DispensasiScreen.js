@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, SafeAreaView, ScrollView, Pressable, StyleSheet, Alert, TextInput, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, SafeAreaView, ScrollView, Pressable, StyleSheet, Alert, TextInput, KeyboardAvoidingView, Platform, BackHandler } from "react-native";
 import Inputan from "../../components/Inputan";
 import { Dropdown } from 'react-native-element-dropdown';
 import AntDesign from '@expo/vector-icons/AntDesign';
@@ -183,6 +183,34 @@ function DispensasiScreen() {
     const handleChangeAlasan = (text) => {
         setAlasan(text);
     };
+
+    const buttonLogOut2Handler = async (navigation) => {
+
+        navigation.navigate("HalamanUtama");
+
+    };
+
+    useEffect(() => {
+        // if (!isMainPage) return;
+        const backAction = () => {
+            Alert.alert("Peringatan!", "Apakah Anda ingin keluar? ", [
+                {
+                    text: "Cancel",
+                    onPress: () => null,
+                    style: "cancel"
+                },
+                { text: "YES", onPress: () => buttonLogOut2Handler(navigation) }
+            ]);
+            return true;
+        };
+
+        const backHandler = BackHandler.addEventListener(
+            "hardwareBackPress",
+            backAction
+        );
+
+        return () => backHandler.remove();
+    }, [navigation]);
 
 
 

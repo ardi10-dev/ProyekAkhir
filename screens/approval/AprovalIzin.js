@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useFocusEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Pressable, FlatList } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, Pressable, FlatList, BackHandler } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -25,7 +25,16 @@ function AprovalIzin({ navigation }) {
 
     const years = ['all', ...Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - 5 + i).toString())];
     const months = ['All', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    useEffect(() => {
+        const backAction = () => {
+            navigation.navigate("HalamanAproval");
+            return true;
+        };
 
+        const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
+
+        return () => backHandler.remove(); // Cleanup on unmount
+    }, [navigation]);
     useEffect(() => {
 
         const fetchRiwayatIzin = async () => {
@@ -92,9 +101,9 @@ function AprovalIzin({ navigation }) {
         const focusSubscription = navigation.addListener('focus', () => {
             fetchRiwayatIzin();
         });
-    
+
         return focusSubscription;
-    },[navigation])
+    }, [navigation])
     const handleFilter = () => {
         if (!riwayatIzin.length) return;
 

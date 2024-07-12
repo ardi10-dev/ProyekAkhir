@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Pressable } from "react-native";
+import { View, Text, StyleSheet, SafeAreaView, Pressable, Alert , BackHandler} from "react-native";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import NavBottom from "../../components/NavBottom";
@@ -31,6 +31,19 @@ function HalamanRiwayat() {
             clearInterval(timer);
         };
     }, []);
+
+    
+
+    useEffect(() => {
+        const backAction = () => {
+            navigation.navigate("HalamanUtama");
+            return true; 
+        };
+
+        const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
+
+        return () => backHandler.remove(); // Cleanup on unmount
+    }, [navigation]);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -69,7 +82,7 @@ function HalamanRiwayat() {
                 </View>
                 <View style={styles.buttonWrapper}>
                     <Pressable style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton]}
-                        onPress={buttonRiwayatCutiHandler}
+                        onPress={buttonRiwayatLemburHandler}
                     >
                         <View style={styles.buttonContent}>
                             <Text style={styles.textButton}>Riwayat Lembur</Text>

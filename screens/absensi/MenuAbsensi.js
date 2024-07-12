@@ -19,7 +19,7 @@ function MenuAbsensi({ route }) {
     const [sessionId, setSessionId] = useState('');
     const [username, setUsername] = useState('');
     const [userId, setUserId] = useState('');
-    const [profileUser, setProfileUser] = useState([]); 
+    const [profileUser, setProfileUser] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const userData = route.params && route.params.userData ? route.params.userData : {};
@@ -67,7 +67,7 @@ function MenuAbsensi({ route }) {
                     month: 'long',
                     day: 'numeric',
                 });
-                
+
                 let isTodayAbsen = false;
                 filterdata.forEach((item) => {
                     // Assuming item[4] is in yyyy-MM-dd format
@@ -83,20 +83,54 @@ function MenuAbsensi({ route }) {
         };
 
         const fetchDatajadwalKeluar = async () => {
-            const jamKeluar = await AsyncStorage.getItem('jam_keluar');
-            const currentTime = new Date().toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta' });
-            const partst = currentTime.split(".");
-            const hour = partst[0];
-            const minute = partst[1];
-            const second = partst[2];
-            const formattedTime = `${hour}:${minute}:${second}`;
+            try {
 
-            if (formattedTime > jamKeluar) {
-                setBtnPulangDisabel(false);
-            } else {
-                setBtnPulangDisabel(true);
+                const data = await AsyncStorage.getItem('userData');
+                const userData = JSON.parse(data);
+                const idPegawai = userData.id_pegawai;
+
+                const apiUrl = `https://hc.baktitimah.co.id/pegawaian/api/API_Absen/dataAbsen_get?id_pegawai=${idPegawai}`;
+                const response = await fetch(apiUrl);
+                const absenData = await response.json();
+
+                const jamKeluar = await AsyncStorage.getItem('jam_keluar');
+                console.log('jam keluar yang di simpan',jamKeluar);
+
+                const currentTime = new Date().toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta' });
+                const partst = currentTime.split(".");
+                const hour = partst[0];
+                const minute = partst[1];
+                const second = partst[2];
+                const formattedTime = `${hour}:${minute}:${second}`;
+                console.log('hari ini', formattedTime);
+
+                const filterdata = absenData.data;
+
+                let isTodayAbsen2 = true; // Default set to true
+                filterdata.forEach((item) => {
+                    if (formattedTime <= item[14]) {
+                        isTodayAbsen2 = false;
+                    } 
+                    else {
+                        isTodayAbsen2 = true;
+                    }
+                    // console.log('jam keluar', item[14]);
+                    // console.log('jam hari', formattedTime);
+                });
+                setBtnPulangDisabel(!isTodayAbsen2);
+
+                // const jamKeluar='09:00:00'
+                // console.log(jamKeluar);
+                // if (formattedTime > jamKeluar) {
+                //     setBtnPulangDisabel(true);
+                // } else {
+                //     setBtnPulangDisabel(false);
+                // }
+            } catch (error) {
+                console.error('Error fetching data keluar:', error);
             }
         };
+
 
         const focusSubscription = navigation.addListener('focus', () => {
             fetchDatajadwalMasuk();
@@ -151,6 +185,22 @@ function MenuAbsensi({ route }) {
             Alert.alert('Error', 'Failed to get location.');
         }
     }
+
+    useEffect(() => {
+        const backAction = () => {
+            
+            navigation.navigate("HalamanUtama");
+            return true; 
+        };
+
+        const backHandler = BackHandler.addEventListener(
+            "hardwareBackPress",
+            backAction
+        );
+
+        // Cleanup listener saat komponen unmount
+        return () => backHandler.remove();
+    }, [navigation]);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -281,7 +331,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         height: 30,
-        width:150,
+        width: 150,
     },
     textButton: {
         fontWeight: 'bold',

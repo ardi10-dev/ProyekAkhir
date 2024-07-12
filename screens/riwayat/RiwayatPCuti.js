@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Pressable, FlatList,  } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, Pressable, FlatList, BackHandler } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -51,6 +51,17 @@ function RiwayatPCuti() {
         fetchRiwayatIzin();
     }, []);
 
+    useEffect(() => {
+        const backAction = () => {
+            navigation.navigate("HalamanRiwayatScreen");
+            return true;
+        };
+
+        const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
+
+        return () => backHandler.remove(); // Cleanup on unmount
+    }, [navigation]);
+
     const handleFilter = () => {
         if (!riwayatIzin.length) return;
 
@@ -76,13 +87,13 @@ function RiwayatPCuti() {
     };
 
     function renderRiwayatIzin({ item }) {
-        const nama = item[3] || ''; 
-        const nip = item[2] || ''; 
-        const ket = item[1] || ''; 
-        const jenisIzin = item[8] || ''; 
-        const tanggal = item[4] || ''; 
-        const tgl_mulai = item[6] || ''; 
-        const tgl_akhir = item[7] || ''; 
+        const nama = item[3] || '';
+        const nip = item[2] || '';
+        const ket = item[1] || '';
+        const jenisIzin = item[8] || '';
+        const tanggal = item[4] || '';
+        const tgl_mulai = item[6] || '';
+        const tgl_akhir = item[7] || '';
 
         return (
             <CardCuti
@@ -105,6 +116,8 @@ function RiwayatPCuti() {
             </View>
         );
     }
+
+
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: '#E7F4FE' }]}>

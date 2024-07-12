@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Pressable, FlatList } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, Pressable, FlatList , BackHandler} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CardIzin from '../../components/CardIzin';
 import { ActivityIndicator } from 'react-native';
 
-function RiwayatIzin({ route }) {
+function RiwayatIzin({ route, navigation }) {
     const [selectedYear, setSelectedYear] = useState('all');
     const [selectedMonth, setSelectedMonth] = useState('all');
     const [filteredData, setFilteredData] = useState([]);
@@ -52,6 +52,18 @@ function RiwayatIzin({ route }) {
 
         fetchRiwayatIzin();
     }, []);
+
+    useEffect(() => {
+        const backAction = () => {
+            navigation.navigate("HalamanRiwayatScreen");
+            return true; 
+        };
+
+        const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
+
+        return () => backHandler.remove(); // Cleanup on unmount
+    }, [navigation]);
+
 
     const handleFilter = () => {
         if (!riwayatIzin.length) return;
@@ -103,6 +115,8 @@ function RiwayatIzin({ route }) {
             </View>
         );
     }
+
+    
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: '#E7F4FE' }]}>

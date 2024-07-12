@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Pressable, FlatList } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, Pressable, FlatList, ActivityIndicator, BackHandler } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import CardIzin from '../../components/CardIzin';
 import CardLembur from '../../components/CardLembur';
-import { ActivityIndicator } from 'react-native';
 
-function RiwayatLembur() {
+function RiwayatLembur({ navigation }) {
     const [selectedYear, setSelectedYear] = useState('all');
     const [selectedMonth, setSelectedMonth] = useState('all');
     const [filteredData, setFilteredData] = useState([]);
-    const [riwayatIzin, setRiwayatIzin] = useState([]); // Initialize as empty array
+    const [riwayatIzin, setRiwayatIzin] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const years = ['all', ...Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - 5 + i).toString())];
@@ -33,19 +31,33 @@ function RiwayatLembur() {
                     }
 
                     const responseData = await response.json();
-                    setRiwayatIzin(responseData.data); // Set data riwayat izin ke state
+                    setRiwayatIzin(responseData.data);
                     setFilteredData(responseData.data);
-                    setLoading(false); // Stop loading indicator
-                    // console.log(responseData.data);
                 }
             } catch (error) {
                 console.error('Error fetching riwayat izin:', error);
-                setLoading(false); // Stop loading indicator on error
+            } finally {
+                setLoading(false);
             }
         };
 
         fetchRiwayatIzin();
     }, []);
+
+    useEffect(() => {
+        const backAction = () => {
+            navigation.navigate("HalamanRiwayatScreen");
+            return true;
+        };
+
+        const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
+
+        return () => backHandler.remove(); // Cleanup on unmount
+    }, [navigation]);
+
+    useEffect(() => {
+        handleFilter();
+    }, [selectedYear, selectedMonth]);
 
     const handleFilter = () => {
         if (!riwayatIzin.length) return;
@@ -71,19 +83,19 @@ function RiwayatLembur() {
         return new Date(year, monthIndex, day);
     };
 
-    function renderRiwayatIzin({ item }) {
-        const nama = item[3] || ''; 
-        const nip = item[2] || ''; 
-        const ket = item[1] || ''; 
-        const jenisLembur = item[8] || ''; 
-        const tanggal = item[4] || ''; 
-        const waktu_mulai = item[6] || ''; 
-        const waktu_akhir = item[7] || ''; 
-        const tgl_lembur = item[5] || ''; 
+    const renderRiwayatIzin = ({ item }) => {
+        const nama = item[3] || '';
+        const nip = item[2] || '';
+        const ket = item[1] || '';
+        const jenisLembur = item[8] || '';
+        const tanggal = item[4] || '';
+        const waktu_mulai = item[6] || '';
+        const waktu_akhir = item[7] || '';
+        const tgl_lembur = item[5] || '';
 
         return (
             <CardLembur
-                key={item[0]} // Pastikan setiap item memiliki key yang unik
+                key={item[0]}
                 nama={nama}
                 nip={nip}
                 ket={ket}
@@ -94,7 +106,7 @@ function RiwayatLembur() {
                 tgl_lembur={tgl_lembur}
             />
         );
-    }
+    };
 
     if (loading) {
         return (
@@ -146,10 +158,10 @@ function RiwayatLembur() {
             </View>
 
             <FlatList
-                data={filteredData.length > 0 ? filteredData : []} // Only display filteredData if available
+                data={filteredData}
                 keyExtractor={(item, index) => index.toString()}
                 renderItem={renderRiwayatIzin}
-                ListEmptyComponent={<Text>No data found</Text>} // Display message when there's no data
+                ListEmptyComponent={<Text>No data found</Text>}
             />
         </SafeAreaView>
     );
@@ -181,7 +193,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         justifyContent: 'center',
         paddingHorizontal: 10,
-        backgroundColor: 'white', // Optional: to ensure the picker is on a white background
+        backgroundColor: 'white',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.8,
@@ -203,5 +215,10 @@ const styles = StyleSheet.create({
     },
     pressedButton: {
         opacity: 0.7,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });

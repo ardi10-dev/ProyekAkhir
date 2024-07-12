@@ -17,7 +17,7 @@ function LokasiPengguna() {
     const [userData, setUserData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isError, setIsError] = useState(false);
-    const radius = 0.5; // Radius dalam kilometer (misalnya 1 km)
+    const radius = 0.3; 
 
     useEffect(() => {
         const fetchUserData = async () => {

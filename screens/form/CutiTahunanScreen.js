@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, SafeAreaView, ScrollView, Pressable, StyleSheet, TextInput, Alert, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, SafeAreaView, ScrollView, Pressable, StyleSheet, TextInput, Alert, KeyboardAvoidingView, Platform, BackHandler } from "react-native";
 import Inputan from "../../components/Inputan";
 import { Dropdown } from 'react-native-element-dropdown';
 import AntDesign from '@expo/vector-icons/AntDesign';
@@ -11,7 +11,7 @@ import { useNavigation } from '@react-navigation/native';
 
 
 
-function CutiTahunanScreen({ route }) {
+function CutiTahunanScreen({ route, isPageCuti }) {
     const navigation = useNavigation();
 
     const [data, setData] = useState([
@@ -185,6 +185,36 @@ function CutiTahunanScreen({ route }) {
         }
     };
 
+    const buttonLogOut2Handler = async (navigation) => {
+        
+            navigation.navigate("HalamanUtama");
+            
+    };
+
+    useEffect(() => {
+        // if (!isMainPage) return;
+        const backAction = () => {
+            Alert.alert("Peringatan!","Apakah Anda ingin keluar? ", [
+                {
+                    text: "Cancel",
+                    onPress: () => null,
+                    style: "cancel"
+                },
+                { text: "YES", onPress: () => buttonLogOut2Handler(navigation) }
+            ]);
+            return true;
+        };
+
+        const backHandler = BackHandler.addEventListener(
+            "hardwareBackPress",
+            backAction
+        );
+
+        return () => backHandler.remove();
+    }, [navigation]);
+
+   
+
 
     return (
         <KeyboardAvoidingView
@@ -222,7 +252,7 @@ function CutiTahunanScreen({ route }) {
                         )}
                         <View>
                             <Text style={styles.text}>Sisa Cuti Tahun: </Text>
-                            <Inputan value={sisaCutiData.jatah_cuti ? sisaCutiData.jatah_cuti : ''}  />
+                            <Inputan value={sisaCutiData.jatah_cuti ? sisaCutiData.jatah_cuti : ''} />
                         </View>
                         <View>
                             <Text style={styles.text}>Lama Cuti: </Text>
