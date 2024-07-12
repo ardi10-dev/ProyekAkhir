@@ -5,6 +5,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useState, useEffect } from 'react';
 import { CommonActions } from "@react-navigation/native";
 import { PEGAWAI } from "../data/dummy-data";
+import { getCurrentPositionAsync, useForegroundPermissions, PermissionStatus } from 'expo-location';
+
 
 
 
@@ -22,44 +24,40 @@ function Login({ navigation }) {
         const checkToken = async () => {
             try {
                 const storedUserData = await AsyncStorage.getItem('userData');
-                const response = await fetch('https://hc.baktitimah.co.id/pegawaian/api/Login/CekToken',{
+    
+                // if (!storedUserData) {
+                //     navigation.replace('Login');
+                //     return;
+                // }
+    
+                const response = await fetch('https://hc.baktitimah.co.id/pegawaian/api/Login/CekToken', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body:JSON.stringify({
-                        token:storedUserData
+                    body: JSON.stringify({
+                        token: storedUserData
                     })
-                })
+                });
+    
                 const data = await response.json();
                 console.log(data);
-                if (data.status == 200){
-                    navigation.navigate("HalamanUtama")
+    
+                if (data.status === 200) {
+                    navigation.navigate("HalamanUtama");
+                } else if (data.status === 404) {
+                    navigation.navigate("Login");
                 }
-                else if (data.status == 404){
-                    navigation.navigate("login")
-                }
-                // if (storedUserData) {
-                //     const userDataParsed = JSON.parse(storedUserData);
-                //     setUserData(userDataParsed);
-                // }
-
-                // const token = userData ? userData.token : null;
-                // console.log('token yang di HU', token);
-
-                // if (!token) {
-                //     navigation.replace('Login');
-                //     return;
-                // }
             } catch (error) {
                 console.error('Error checking token:', error);
             } finally {
-                setLoading(false);
+                // Assuming setLoading is defined as state
+                // setLoading(false);
             }
         };
+    
         checkToken();
-
-    }, []);
+    }, []); 
 
     const buttonLoginHandler = async () => {
         setLoading(true); // Set loading indicator

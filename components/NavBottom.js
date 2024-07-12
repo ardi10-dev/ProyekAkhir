@@ -44,9 +44,20 @@ function NavBottom() {
             const data = await response.json();
             console.log(data);
             if (data.status == 200) {
-                navigation.navigate("Login")
+                try {
+
+                    await AsyncStorage.removeItem('userData');
+                    navigation.dispatch(
+                        CommonActions.reset({
+                            index: 0,
+                            routes: [{ name: 'Login' }],
+                        })
+                    );
+                } catch (error) {
+                    console.error(error);
+                }
             }
-           
+
             // if (storedUserData) {
             //     const userDataParsed = JSON.parse(storedUserData);
             //     setUserData(userDataParsed);
@@ -61,7 +72,7 @@ function NavBottom() {
             // }
         } catch (error) {
             console.error('Error checking token:', error);
-        } 
+        }
         // try {
 
         //     await AsyncStorage.removeItem('userData');

@@ -1,10 +1,13 @@
-import React from 'react';
+import React,{ useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View, Button, TouchableOpacity, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { CommonActions } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Location from 'expo-location';
+
+
 
 import Login from './screens/Login';
 import HalamanUtama from './screens/HalamanUtama';
@@ -146,7 +149,7 @@ function RiwayatStackScreen({ navigation }) {
           ),
         }}
       />
-      
+
       <RiwayatStack.Screen
         name="RiwayatLembur"
         component={RiwayatLembur}
@@ -243,7 +246,7 @@ function AprovalStackScreen({ navigation }) {
               onPress={() =>
                 navigation.navigate('AprovalIzin')
               }
-              
+
               style={{
                 backgroundColor: 'transparent',
                 padding: 10,
@@ -264,9 +267,9 @@ function AprovalStackScreen({ navigation }) {
           title: 'Approval Cuti Tahunan',
           headerLeft: () => (
             <TouchableOpacity
-            onPress={() =>
-              navigation.navigate('HalamanAproval')
-            }
+              onPress={() =>
+                navigation.navigate('HalamanAproval')
+              }
               style={{
                 backgroundColor: 'transparent',
                 padding: 10,
@@ -287,9 +290,9 @@ function AprovalStackScreen({ navigation }) {
           title: 'Detail Approval Cuti',
           headerLeft: () => (
             <TouchableOpacity
-            onPress={() =>
-              navigation.navigate('ApprovalCuti')
-            }
+              onPress={() =>
+                navigation.navigate('ApprovalCuti')
+              }
               style={{
                 backgroundColor: 'transparent',
                 padding: 10,
@@ -310,9 +313,9 @@ function AprovalStackScreen({ navigation }) {
           title: 'Approval Lembur',
           headerLeft: () => (
             <TouchableOpacity
-            onPress={() =>
-              navigation.navigate('HalamanAproval')
-            }
+              onPress={() =>
+                navigation.navigate('HalamanAproval')
+              }
               style={{
                 backgroundColor: 'transparent',
                 padding: 10,
@@ -333,9 +336,9 @@ function AprovalStackScreen({ navigation }) {
           title: 'Detail Approval Lembur',
           headerLeft: () => (
             <TouchableOpacity
-            onPress={() =>
-              navigation.navigate('ApprovalLembur')
-            }
+              onPress={() =>
+                navigation.navigate('ApprovalLembur')
+              }
               style={{
                 backgroundColor: 'transparent',
                 padding: 10,
@@ -448,6 +451,35 @@ function RootStack() {
 }
 
 export default function App() {
+
+ 
+  const [isNavigating, setIsNavigating] = useState(false);
+
+  async function verifyPermissions() {
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert(
+        'Insufficient permissions!',
+        'You need to grant location permissions to use this app.'
+      );
+      return false;
+    }
+    return true;
+  }
+
+  async function checkAndSetPermission() {
+    const hasPermission = await verifyPermissions();
+    if (!hasPermission) {
+      setIsNavigating(false);
+    }
+  }
+
+  // Call checkAndSetPermission on component mount or as needed
+  useEffect(() => {
+    checkAndSetPermission();
+  }, []);
+
+
   return (
     <NavigationContainer>
       <RootStack />
