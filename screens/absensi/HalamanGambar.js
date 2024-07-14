@@ -33,12 +33,12 @@ function HalamanGambar({ onImageTaken }) {
 
         const image = await launchCameraAsync({
             allowsEditing: true,
-            aspect: [16, 9],
+            aspect: [1,1],
             quality: 0.5,
         });
 
         if (!image.canceled) {
-            // console.log('Original Image URI:', image.assets[0].uri);
+            console.log('Original Image URI:', image.assets[0].uri);
 
             try {
                 const manipulatedImage = await ImageManipulator.manipulateAsync(
@@ -47,7 +47,7 @@ function HalamanGambar({ onImageTaken }) {
                     { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
                 );
 
-                // console.log('Manipulated Image URI:', manipulatedImage.uri);
+                console.log('Manipulated Image URI:', manipulatedImage.uri);
 
                 const newImageUri = `${FileSystem.cacheDirectory}photo.jpg`;
                 await FileSystem.moveAsync({
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     },
     imagePreview: {
         width: '100%',
-        height: 200,
+        height: 300,
         marginVertical: 8,
         justifyContent: 'center',
         alignItems: 'center',

@@ -19,187 +19,59 @@ import LoadingAlert from "../components/Loading/LoadingAlert";
 
 function HalamanUtama({ route, isMainPage }) {
     const navigation = useNavigation();
-    const [isNavigating, setIsNavigating] = useState(false);
     const [profileUser, setProfileUser] = useState({});
     const [loading, setLoading] = useState(true);
     const [jam_masukShift, setJam_masukShift] = useState('');
     const [jam_KeluarShift, setJam_KeluarShift] = useState('');
     const [btndisabel, setBtndisabel] = useState(false);
     const [btnPulangDisabel, setBtnPulangDisabel] = useState(false);
-    const [userData, setUserData] = useState(route.params && route.params.userData ? route.params.userData : {});
+    const userData = route.params?.userData || {};
     const userEmail = userData.email || 'Guest';
     const isMockLocation = useDetectMockLocationApp();
-
-    const [jamMasukShift, setJamMasukShift] = useState("00:00:00");
-    const [jamKeluarShift, setJamKeluarShift] = useState("00:00:00");
-
+    const [waktu, setWaktu] = useState(new Date());
 
     useEffect(() => {
-        const fetchProfileUser = async () => {
-            try {
-                const data = await AsyncStorage.getItem('userData');
-                if (data !== null) {
-                    const userData = JSON.parse(data);
-                    const idPegawai = userData.id_pegawai;
+        const interval = setInterval(() => {
+            setWaktu(new Date());
+        }, 1000);
+        return () => clearInterval(interval);
+    }, []);
 
-                    const apiUrl = `https://hc.baktitimah.co.id/pegawaian/api/Login/profile?id_pegawai=${idPegawai}`;
-                    const response = await fetch(apiUrl);
-
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-
-                    const responseData = await response.json();
-
-                    const imageUrl = `http://hc.baktitimah.co.id/pegawaian/image/profileuser/${responseData.data.image}`;
-
-                    setProfileUser(responseData.data);
-                    setLoading(false);
-                }
-            } catch (error) {
-                console.error('Error fetching profile:', error);
-                setLoading(false);
-            }
-        };
-
-        const fetchShiftData = async () => {
-            try {
-                const masukJamshift = await AsyncStorage.getItem('jam_masuk');
-                const keluarJamshift = await AsyncStorage.getItem('jam_keluar');
-                setJam_masukShift(masukJamshift);
-                setJam_KeluarShift(keluarJamshift);
-            } catch (error) {
-                console.error('Error fetching shift data:', error);
-            }
-        };
-
-        const fetchDatajadwalMasuk = async () => {
-            try {
-                const data = await AsyncStorage.getItem('userData');
-                const userData = JSON.parse(data);
-                const idPegawai = userData.id_pegawai;
-
-                const apiUrl = `https://hc.baktitimah.co.id/pegawaian/api/API_Absen/dataAbsen_get?id_pegawai=${idPegawai}`;
-                const response = await fetch(apiUrl);
-                const absenData = await response.json();
-
-                const filterdata = absenData.data;
-
-                const today = new Date().toLocaleDateString('id-ID', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                });
-
-                let isTodayAbsen = false;
-                filterdata.forEach((item) => {
-                    if (item[4] == today) {
-                        isTodayAbsen = true;
-                    }
-                });
-
-                setBtndisabel(isTodayAbsen);
-            } catch (error) {
-                console.error('Error fetching data absen:', error);
-            }
-        };
-
-        const fetchDatajadwalKeluar = async () => {
-            try {
-
-                const data = await AsyncStorage.getItem('userData');
-                const userData = JSON.parse(data);
-                const idPegawai = userData.id_pegawai;
-
-                const apiUrl = `https://hc.baktitimah.co.id/pegawaian/api/API_Absen/dataAbsen_get?id_pegawai=${idPegawai}`;
-                const response = await fetch(apiUrl);
-                const absenData = await response.json();
-
-                // const jamKeluar = await AsyncStorage.getItem('jam_keluar');
-                const currentTime = new Date().toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta' });
-                const partst = currentTime.split(".");
-                const hour = partst[0];
-                const minute = partst[1];
-                const second = partst[2];
-                const formattedTime = `${hour}:${minute}:${second}`;
-                console.log('hari ini', formattedTime);
-
-                const filterdata = absenData.data;
-
-                let isTodayAbsen2 = true; // Default set to true
-                filterdata.forEach((item) => {
-
-                    if (formattedTime <= item[14]) {
-                        isTodayAbsen2 = false;
-                    }
-                    else {
-                        isTodayAbsen2 = true;
-                    }
-                    // console.log('jam keluar', item[14]);
-                    // console.log('jam hari', formattedTime);
-
-
-                });
-                setBtnPulangDisabel(!isTodayAbsen2);
-
-
-
-                // const jamKeluar='09:00:00'
-                // console.log(jamKeluar);
-                // if (formattedTime > jamKeluar) {
-                //     setBtnPulangDisabel(true);
-                // } else {
-                //     setBtnPulangDisabel(false);
-                // }
-            } catch (error) {
-                console.error('Error fetching data keluar:', error);
-            }
-        };
-
-
-
-        const focusSubscription = navigation.addListener('focus', () => {
-            fetchProfileUser();
-            fetchShiftData();
-            fetchDatajadwalMasuk();
-            fetchDatajadwalKeluar();
-
-        });
-
-        return () => {
-            focusSubscription();
-        };
-
-    }, [navigation]);
-
-    async function verifyPermissions() {
-        let { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-            Alert.alert(
-                'Insufficient permissions!',
-                'You need to grant location permissions to use this app.'
-            );
-            return false;
-        }
-        return true;
-    }
-
-    // async function isMockLocation() {
-    //     const { isMocked } = await getCurrentPositionAsync({});
-    //     return isMocked;
-    // }
-
-    async function buttonAbsensHandler() {
-        if (isNavigating) return; // Prevent multiple navigations
-        setIsNavigating(true);
-
+    const fetchProfileUser = async () => {
         try {
-            const hasPermission = await verifyPermissions();
-            if (!hasPermission) {
-                setIsNavigating(false);
-                return;
-            }
+            const data = await AsyncStorage.getItem('userData');
+            if (data !== null) {
+                const userData = JSON.parse(data);
+                const idPegawai = userData.id_pegawai;
 
+                const apiUrl = `https://hc.baktitimah.co.id/pegawaian/api/Login/profile?id_pegawai=${idPegawai}`;
+                const response = await fetch(apiUrl);
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const responseData = await response.json();
+                setProfileUser(responseData.data);
+            }
+        } catch (error) {
+            console.error('Error fetching profile:', error);
+        }
+    };
+
+    const fetchShiftData = async () => {
+        try {
+            const masukJamshift = await AsyncStorage.getItem('jam_masuk');
+            const keluarJamshift = await AsyncStorage.getItem('jam_keluar');
+            setJam_masukShift(masukJamshift);
+            setJam_KeluarShift(keluarJamshift);
+        } catch (error) {
+            console.error('Error fetching shift data:', error);
+        }
+    };
+
+    const fetchDataAbsen = async () => {
+        try {
             const data = await AsyncStorage.getItem('userData');
             const userData = JSON.parse(data);
             const idPegawai = userData.id_pegawai;
@@ -207,127 +79,140 @@ function HalamanUtama({ route, isMainPage }) {
             const apiUrl = `https://hc.baktitimah.co.id/pegawaian/api/API_Absen/dataAbsen_get?id_pegawai=${idPegawai}`;
             const response = await fetch(apiUrl);
             const absenData = await response.json();
-            const filterdata = absenData.data;
-            let tanggal_absen = [];
 
-            filterdata.forEach((item) => {
-                tanggal_absen.push(item[4]);
+            const today = new Date().toLocaleDateString('id-ID', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
             });
 
-            const location = await Location.getCurrentPositionAsync({});
-            console.log(location);
+            let isTodayAbsenMasuk = false;
+            let isTodayAbsenKeluar = false;
+            absenData.data.forEach((item) => {
+                if (item[4] == today) {
+                    isTodayAbsenMasuk = true;
+                }
+                if (item[15] == today) {
+                    isTodayAbsenKeluar = true;
+                }
+            });
 
+            setBtndisabel(isTodayAbsenMasuk);
+            setBtnPulangDisabel(isTodayAbsenKeluar);
+        } catch (error) {
+            console.error('Error fetching data absen:', error);
+        }
+    };
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                await fetchProfileUser();
+                await fetchShiftData();
+                await fetchDataAbsen();
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const focusSubscription = navigation.addListener('focus', fetchData);
+        return () => {
+            focusSubscription();
+        };
+    }, [navigation]);
+
+    const verifyPermissions = async () => {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Insufficient permissions!', 'You need to grant location permissions to use this app.');
+            return false;
+        }
+        return true;
+    };
+
+    const buttonAbsensHandler = async () => {
+        if (loading) return; // Prevent multiple navigations
+        try {
+            const hasPermission = await verifyPermissions();
+            if (!hasPermission) return;
+
+            const location = await Location.getCurrentPositionAsync({});
             const { latitude, longitude } = location.coords;
+
             if (isMockLocation) {
                 Alert.alert('Warning', 'Detected usage of fake GPS location.');
-                setIsNavigating(false);
                 return;
             }
 
             navigation.navigate('HalamanAbsensi', { latitude, longitude });
         } catch (error) {
             Alert.alert('Error', 'Failed to get location.');
-        } finally {
-            setIsNavigating(false);
         }
     };
 
-    async function buttonAbsensPulangHandler() {
-        if (isNavigating) return; // Prevent multiple navigations
-        setIsNavigating(true);
+    const buttonAbsensPulangHandler = async () => {
+        if (loading) return; // Prevent multiple navigations
         try {
             const hasPermission = await verifyPermissions();
-            if (!hasPermission) {
-                setIsNavigating(false);
-                return;
-            }
+            if (!hasPermission) return;
 
             const location = await Location.getCurrentPositionAsync({});
-            console.log(location);
-
             const { latitude, longitude } = location.coords;
+
             if (isMockLocation) {
                 Alert.alert('Warning', 'Detected usage of fake GPS location.');
-                setIsNavigating(false);
                 return;
             }
+
             navigation.navigate('HalamanAbsenPulang', { latitude, longitude });
         } catch (error) {
             Alert.alert('Error', 'Failed to get location.');
-        } finally {
-            setIsNavigating(false);
         }
     };
 
-
-
-    const buttonLogOut2Handler = async (navigation) => {
+    const buttonLogOut2Handler = async () => {
         try {
             setLoading(true);
-
             const storedUserData = await AsyncStorage.getItem('userData');
             const response = await fetch('https://hc.baktitimah.co.id/pegawaian/api/Login/HapusToken', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    token: storedUserData
-                })
-            })
+                body: JSON.stringify({ token: storedUserData })
+            });
             const data = await response.json();
-            console.log(data);
             if (data.status == 200) {
-                navigation.navigate("Login")
+                navigation.navigate("Login");
             }
-
-            // if (storedUserData) {
-            //     const userDataParsed = JSON.parse(storedUserData);
-            //     setUserData(userDataParsed);
-            // }
-
-            // const token = userData ? userData.token : null;
-            // console.log('token yang di HU', token);
-
-            // if (!token) {
-            //     navigation.replace('Login');
-            //     return;
-            // }
         } catch (error) {
             console.error('Error checking token:', error);
-        }finally {
+        } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        // if (!isMainPage) return;
         const backAction = () => {
-            Alert.alert("Apakah Anda ingin keluar? ", "Mohon menggunakan button back diatas", [
-                {
-                    text: "Cancel",
-                    onPress: () => null,
-                    style: "cancel"
-                },
-                { text: "YES", onPress: () => buttonLogOut2Handler(navigation) ,}
+            Alert.alert("Apakah Anda ingin keluar?", "Mohon menggunakan button back diatas", [
+                { text: "Cancel", onPress: () => null, style: "cancel" },
+                { text: "YES", onPress: buttonLogOut2Handler }
             ]);
             return true;
         };
 
-        const backHandler = BackHandler.addEventListener(
-            "hardwareBackPress",
-            backAction
-        );
-
+        const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
         return () => backHandler.remove();
-    }, [navigation]);
+    }, []);
 
     const getImageSource = () => {
         if (profileUser && profileUser.image) {
-            return { uri: `http://hc.baktitimah.co.id/pegawaian/image/profileuser/  ${userData.image}` };
+            return { uri: `http://hc.baktitimah.co.id/pegawaian/image/profileuser/${profileUser.image}` };
         } else {
-            // Jika tidak ada gambar profil atau gambar tidak ditemukan, tampilkan gambar default
-            return DefaultProfileImage; // Ganti dengan sumber gambar default yang Anda miliki
+            return DefaultProfileImage;
         }
     };
 
@@ -343,6 +228,7 @@ function HalamanUtama({ route, isMainPage }) {
                                 <View >
                                     <Text style={[styles.bold, { fontSize: 25, color: 'white', marginBottom: 20 }]}>Selamat Datang</Text>
                                 </View>
+
                             </View>
 
                             <View style={styles.tataContainer}>
@@ -367,7 +253,9 @@ function HalamanUtama({ route, isMainPage }) {
                                         month: 'long',
                                         day: 'numeric',
                                     })}</Text>
-                                    <Text style={[{ fontWeight: 'bold', textAlign: 'right', color: 'white', fontSize: 12, }]}> {new Date().toLocaleTimeString('id-ID')} WIB</Text>
+                                    <Text style={[{ fontWeight: 'bold', textAlign: 'right', color: 'white', fontSize: 12 }]}>
+                                        {waktu.toLocaleTimeString('id-ID')} WIB
+                                    </Text>
                                 </View>
 
 
@@ -441,6 +329,8 @@ function HalamanUtama({ route, isMainPage }) {
                 <View style={{ alignItems: 'center' }}>
                     <CardMenu role_id={profileUser.role_id} />
                 </View>
+
+
                 <LoadingAlert visible={loading} />
             </ScrollView>
 

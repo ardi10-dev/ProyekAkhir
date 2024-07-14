@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Pressable, FlatList, Alert, BackHandler} from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, Pressable, FlatList, Alert, BackHandler } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -52,7 +52,7 @@ function RiwayatAbsen() {
     useEffect(() => {
         const backAction = () => {
             navigation.navigate("HalamanRiwayatScreen");
-            return true; 
+            return true;
         };
 
         const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
@@ -85,17 +85,19 @@ function RiwayatAbsen() {
     };
 
     const renderRiwayatAbsen = ({ item }) => {
-        const nama = item[3] || ''; 
-        const nip = item[2] || ''; 
-        const ketIn = item[9] || '-';        
-        const ketOut = item[10] || '-';        
-        const tanggal = item[4] || ''; 
-        const jam_masuk = item[7] || ''; 
-        const jam_keluar = item[8] || ''; 
+        const nama = item[3] || '';
+        const nip = item[2] || '';
+        const ketIn = item[9] || '-';
+        const ketOut = item[10] || '-';
+        const tanggal = item[4] || '';
+        const jam_masuk = item[7] || '';
+        const jam_keluar = item[8] || '';
+        const bukti_masuk = item[11] || '';
+        const bukti_keluar = item[12] || '';
 
         return (
             <CardBox
-                key={item[0]} 
+                key={item[0]}
                 nama={nama}
                 nip={nip}
                 ketIn={ketIn}
@@ -103,6 +105,9 @@ function RiwayatAbsen() {
                 tanggal={tanggal}
                 jam_masuk={jam_masuk}
                 jam_keluar={jam_keluar}
+                bukti_masuk={bukti_masuk}
+                bukti_keluar={bukti_keluar}
+
             />
         );
     };
@@ -114,7 +119,7 @@ function RiwayatAbsen() {
             </View>
         );
     }
-    
+
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: '#E7F4FE' }]}>
@@ -161,7 +166,7 @@ function RiwayatAbsen() {
                 data={filteredData}
                 keyExtractor={(item, index) => index.toString()}
                 renderItem={renderRiwayatAbsen}
-                ListEmptyComponent={<Text>No data found</Text>} 
+                ListEmptyComponent={<Text>No data found</Text>}
             />
         </SafeAreaView>
     );

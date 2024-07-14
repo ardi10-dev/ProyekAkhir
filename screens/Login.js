@@ -12,23 +12,36 @@ import { getCurrentPositionAsync, useForegroundPermissions, PermissionStatus } f
 
 function Login({ navigation }) {
 
-    const navigate = (route) => navigation.navigate(route);
-
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setLoading] = useState(false);
-    // const [userData, setUserData] = useState(route.params && route.params.userData ? route.params.userData : {});
-
+    const [text1, setText1] = useState('');
+    const [text2, setText2] = useState('');
 
     useEffect(() => {
+        const loadTexts = async () => {
+            try {
+                const storedEmail = await AsyncStorage.getItem('text1');
+                const storedPassword = await AsyncStorage.getItem('text2');
+                if (storedEmail !== null) {
+                    setEmail(storedEmail); // Set email dari AsyncStorage
+                }
+                if (storedPassword !== null) {
+                    setPassword(storedPassword); // Set password dari AsyncStorage
+                }
+            } catch (error) {
+                console.error('Error loading texts:', error);
+            }
+        };
         const checkToken = async () => {
             try {
                 const storedUserData = await AsyncStorage.getItem('userData');
                 const userData = storedUserData ? JSON.parse(storedUserData) : null;
 
                 if (!userData || !userData.token) {
-                    
-                    navigation.navigate('Login');
+                    if (navigation.getState().routes[navigation.getState().index].name !== 'Login') {
+                        navigation.navigate('Login');
+                    }
                     return;
                 }
                 const response = await fetch('https://hc.baktitimah.co.id/pegawaian/api/Login/CekToken', {
@@ -41,41 +54,38 @@ function Login({ navigation }) {
                     })
                 })
                 const data = await response.json();
-                console.log(data);
                 if (data.status == 200) {
-                    navigation.navigate("HalamanUtama")
+                    navigation.navigate("HalamanUtama");
+                } else if (data.status == 404) {
+                    if (navigation.getState().routes[navigation.getState().index].name !== 'Login') {
+                        navigation.navigate("Login");
+                    }
                 }
-                else if (data.status == 404) {
-                    navigation.navigate("Login")
-                }
-                // if (storedUserData) {
-                //     const userDataParsed = JSON.parse(storedUserData);
-                //     setUserData(userDataParsed);
-                // }
-
-                // const token = userData ? userData.token : null;
-                // console.log('token yang di HU', token);
-
-                // if (!token) {
-                //     navigation.replace('Login');
-                //     return;
-                // }
             } catch (error) {
                 console.error('Error checking token:', error);
             } finally {
                 setLoading(false);
             }
         };
+        
+        loadTexts();
         checkToken();
+    }, [navigation]);
 
-    }, []);
+    const handleEmailChange = async (text) => {
+        setEmail(text);
+        await AsyncStorage.setItem('text1', text);
+    };
+
+    const handlePasswordChange = async (text) => {
+        setPassword(text);
+        await AsyncStorage.setItem('text2', text);
+    };
 
     const buttonLoginHandler = async () => {
-        setLoading(true); // Set loading indicator
+        setLoading(true);
 
         try {
-
-
             const url = `https://hc.baktitimah.co.id/pegawaian/api/Login/login?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
 
             const response = await fetch(url, {
@@ -88,11 +98,9 @@ function Login({ navigation }) {
             const contentType = response.headers.get('content-type');
             if (response.ok && contentType && contentType.includes('application/json')) {
                 const result = await response.json();
-                setLoading(false); // Clear loading indicator
-                console.log('API Response:', result);
+                setLoading(false);
 
                 if (result.status === 'success') {
-
                     const userData = {
                         email: result.data.email,
                         role_id: result.data.role_id,
@@ -109,45 +117,22 @@ function Login({ navigation }) {
                         image: result.data.image,
                         token: result.token,
                     };
-                    console.log(userData);
-
                     await AsyncStorage.setItem('userData', JSON.stringify(userData));
-                    console.log('Token login:', userData.token);
-                    // console.log(userData.token);
-
-                    // Navigasi ke HalamanUtama dengan data pengguna
                     navigation.navigate('HalamanUtama', { userData });
-
                 } else {
-                    // Login gagal, tampilkan pesan kesalahan
                     Alert.alert('Login failed', result.message || 'Invalid username or password');
                 }
             } else {
-                setLoading(false); // Clear loading indicator
-                const errorText = await response.text(); // Read the response as text
+                setLoading(false);
+                const errorText = await response.text();
                 console.error('API Error:', errorText);
                 Alert.alert('Login failed', 'Invalid response from server');
             }
         } catch (error) {
             console.error('API Error:', error);
-            setLoading(false); // Ensure loading indicator is cleared if an error occurs
+            setLoading(false);
             Alert.alert('An error occurred', 'Please try again later');
         }
-        // navigation.navigate('HalamanUtama');
-
-        // const foundUser = PEGAWAI.find(user => user.username === username && user.password === password);
-
-        // if (foundUser) {
-        //     await AsyncStorage.setItem('sessionId', foundUser.id);
-        //     await AsyncStorage.setItem('username', foundUser.username);
-        //     navigation.reset({
-        //         index: 0,
-        //         routes: [{ name: 'HalamanUtama' }],
-        //     });
-        // } else {
-        //     Alert.alert('Invalid Credentials', 'The username or password is incorrect.');
-        // }
-
     };
 
     return (
@@ -160,24 +145,22 @@ function Login({ navigation }) {
                 <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
                     <View style={[{ backgroundColor: '#E7F4FE' }]}>
                         <View style={styles.imageContainer}>
-                            <Image
-                                source={require('../assets/ihc.png')}
-                            />
+                            <Image source={require('../assets/ihc.png')} />
                         </View>
                         <View style={[{ marginTop: 30 }]}>
                             <View>
                                 <Text style={[styles.text]}>Email</Text>
                                 <TextInput
                                     style={styles.input}
-                                    onChangeText={setEmail}
-                                    placeholder="Masukkan Username"
+                                    onChangeText={handleEmailChange}
+                                    placeholder="Masukkan Email"
                                     returnKeyType="next"
                                     value={email}
                                 />
                                 <Text style={[styles.text]}>Password</Text>
                                 <TextInput
                                     style={styles.input}
-                                    onChangeText={setPassword}
+                                    onChangeText={handlePasswordChange}
                                     value={password}
                                     placeholder="Masukkan Password"
                                     secureTextEntry
@@ -197,10 +180,8 @@ function Login({ navigation }) {
                 </ScrollView>
             </SafeAreaView>
         </KeyboardAvoidingView>
-
-    )
+    );
 }
-
 
 export default Login;
 const styles = StyleSheet.create({

@@ -1,4 +1,4 @@
-import { View, Text, Image, StyleSheet, SafeAreaView, ScrollView, Pressable, Alert , BackHandler} from "react-native";
+import { View, Text, Image, StyleSheet, SafeAreaView, ScrollView, Pressable, Alert, BackHandler } from "react-native";
 import React, { useState, useEffect } from 'react';
 import { useRoute } from '@react-navigation/native';
 
@@ -10,19 +10,20 @@ import LokasiPengguna from "./LokasiPengguna";
 import ModalAbsen from "../../components/ModalAbsen";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoadingAlert from "../../components/Loading/LoadingAlert";
+import {useNavigation } from '@react-navigation/native';
 
 
 
-function HalamanAbsenPulang({ navigation ,isPageAbsen}) {
+function HalamanAbsenPulang() {
 
     const route = useRoute();
+    const navigation = useNavigation();
+
+    const { latitude, longitude, isInArea } = route.params;
     const [pickedImage, setPickedImage] = useState(null);
-    const { latitude, longitude } = route.params;
     const [modalVisible, setModalVisible] = useState(false);
     const [userData, setUserData] = useState(null);
-    const [currentTime, setCurrentTime] = useState(new Date());
     const [loading, setLoading] = useState(false);
-
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -31,7 +32,7 @@ function HalamanAbsenPulang({ navigation ,isPageAbsen}) {
                 const userData = JSON.parse(userDataJson);
                 setUserData(userData);
             } catch (error) {
-                console.error('Error fetching user data from AsyncStorage:', error);
+                console.error('Error fetching user data:', error);
             }
         };
 
@@ -41,16 +42,20 @@ function HalamanAbsenPulang({ navigation ,isPageAbsen}) {
     const handleAbsenPulangSubmit = async () => {
         try {
             setLoading(true);
-            
+
             if (!pickedImage) {
                 throw new Error('Wajib Mengupload Foto');
+            }
+
+            if (!isInArea) {
+                throw new Error('Tidak bisa mengajukan absen karena berada di luar area absen.');
             }
 
             const formData = new FormData();
             formData.append('photo', {
                 uri: pickedImage,
                 type: 'image/jpeg',
-                name: 'photo.jpg'
+                name: 'photo.jpg',
             });
             formData.append('id_pegawai', userData.id_pegawai);
             formData.append('tgl_absen', new Date().toISOString().split('T')[0]);
@@ -69,23 +74,16 @@ function HalamanAbsenPulang({ navigation ,isPageAbsen}) {
                 throw new Error(`Server error: ${response.status} - ${errorMessage}`);
             }
 
-            const responseData = await response.json();
-            // console.log(responseData);
             await AsyncStorage.removeItem('jam_masuk');
             await AsyncStorage.removeItem('jam_keluar');
 
             setModalVisible(true);
         } catch (error) {
-            // console.error('Error submitting absensi:', error);
             Alert.alert('Peringatan!!', error.message);
-        }
-        finally {
+        } finally {
             setLoading(false);
         }
     };
-
-
-
     const closeModal = () => {
         setModalVisible(false);
         navigation.navigate('RiwayatStackScreen', { screen: 'RiwayatAbsen' });
@@ -96,32 +94,32 @@ function HalamanAbsenPulang({ navigation ,isPageAbsen}) {
         setPickedImage(imageUri);
     };
     const buttonLogOut2Handler = async (navigation) => {
-        
-        navigation.navigate("HalamanUtama");
-        
-};
 
-useEffect(() => {
-    // if (!isMainPage) return;
-    const backAction = () => {
-        Alert.alert("Peringatan!","Apakah Anda ingin keluar? ", [
-            {
-                text: "Cancel",
-                onPress: () => null,
-                style: "cancel"
-            },
-            { text: "YES", onPress: () => buttonLogOut2Handler(navigation) }
-        ]);
-        return true;
+        navigation.navigate("HalamanUtama");
+
     };
 
-    const backHandler = BackHandler.addEventListener(
-        "hardwareBackPress",
-        backAction
-    );
+    useEffect(() => {
+        // if (!isMainPage) return;
+        const backAction = () => {
+            Alert.alert("Peringatan!", "Apakah Anda ingin keluar? ", [
+                {
+                    text: "Cancel",
+                    onPress: () => null,
+                    style: "cancel"
+                },
+                { text: "YES", onPress: () => buttonLogOut2Handler(navigation) }
+            ]);
+            return true;
+        };
 
-    return () => backHandler.remove();
-}, [navigation]);
+        const backHandler = BackHandler.addEventListener(
+            "hardwareBackPress",
+            backAction
+        );
+
+        return () => backHandler.remove();
+    }, [navigation]);
 
 
     return (
@@ -163,7 +161,7 @@ useEffect(() => {
                         <Text style={styles.textButton}>Submit</Text>
                     </Pressable>
                 </View>
-                <LoadingAlert visible={loading}/>
+                <LoadingAlert visible={loading} />
                 <ModalAbsen visible={modalVisible} closeModal={closeModal} />
                 {/* <SuccessModal  /> */}
             </ScrollView>

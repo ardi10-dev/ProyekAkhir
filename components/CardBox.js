@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Image } from "react-native";
 import React from 'react';
 
 const formatDate = (dateString) => {
@@ -10,27 +10,37 @@ const formatDate = (dateString) => {
 };
 
 
-function CardBox({ nama, nip, ketIn, ketOut, tanggal, jam_masuk, jam_keluar }) {
+function CardBox({ nama, nip, ketIn, ketOut, tanggal, jam_masuk, jam_keluar, bukti_masuk, bukti_keluar }) {
     const ketStyle = (ketIn) => {
         switch (ketIn) {
             case 'Tepat Waktu':
                 return { text: 'Tepat Waktu', backgroundColor: 'green', textColor: 'white' };
             case 'Telat':
-                return { text: 'Telat', backgroundColor: 'red', textColor: 'black' };
+                return { text: 'Telat', backgroundColor: '#FF7777', textColor: 'black' };
+            case 'Cuti':
+                return { text: 'Cuti', backgroundColor: '#478CCF', textColor: 'white' };
+            case 'Izin':
+                return { text: 'Izin', backgroundColor: '#478CCF', textColor: 'white' };
             default:
-                return { text: 'Belum Keluar', backgroundColor: 'blue', textColor: 'black' };
+                return { text: 'Belum Keluar', backgroundColor: '#478CCF', textColor: 'white' };
         }
     }
     const ketStyle2 = (ketOut) => {
         switch (ketOut) {
             case 'Tepat Waktu':
                 return { text: 'Tepat Waktu', backgroundColor: 'green', textColor: 'white' };
-            case 'Pulang Cepat':
-                return { text: 'Pulang Cepat', backgroundColor: 'red', textColor: 'black' };
+            case 'Telat':
+                return { text: 'Telat', backgroundColor: '#FF7777', textColor: 'black' };
+            case 'Cuti':
+                return { text: 'Cuti', backgroundColor: '#478CCF', textColor: 'white' };
+            case 'Izin':
+                return { text: 'Izin', backgroundColor: '#478CCF', textColor: 'white' };
             default:
-                return { text: 'Belum Keluar', backgroundColor: 'blue', textColor: 'white' };
+                return { text: 'Belum Keluar', backgroundColor: '#478CCF', textColor: 'white' };
         }
     }
+    // console.log('Bukti Masuk:', bukti_masuk);
+    console.log('Bukti keluar:', bukti_keluar);
 
     const formattedDate = new Date(tanggal).toLocaleDateString('id-ID', {
         day: 'numeric',
@@ -41,41 +51,61 @@ function CardBox({ nama, nip, ketIn, ketOut, tanggal, jam_masuk, jam_keluar }) {
         <View style={styles.container}>
             <View style={styles.rectangle}>
                 <View style={styles.rowContainer}>
-                    <View style={styles.leftColumn}>
+                    <View style={styles.leftColumn1}>
                         <Text style={styles.label}>Tanggal:</Text>
                     </View>
-                    <View style={styles.rightColumn}>
+                    <View style={styles.rightColumn2}>
                         <Text style={styles.label}>{tanggal}</Text>
                     </View>
+
                 </View>
                 <View style={styles.rowContainer}>
                     <View style={styles.leftColumn}>
                         <Text style={styles.label}>Nama:</Text>
                         <Text style={styles.value}>{nama}</Text>
                     </View>
-                    <View style={styles.rightColumn}>
+                    <View style={styles.centerColumn}>
                         <Text style={styles.label}>NIP:</Text>
                         <Text style={styles.value}>{nip}</Text>
                     </View>
+                    <View style={styles.rightColumn}>
+                        <Text style={styles.label}>foto Masuk :</Text>
+                        {bukti_masuk && (
+                            <Image  source={{ uri: `https://hc.baktitimah.co.id/pegawaian/image/absen_masuk/${bukti_masuk}` }}  style={styles.image}
+                            />
+                        )}
+
+
+                    </View>
+
                 </View>
                 <View style={styles.rowContainer}>
                     <View style={styles.leftColumn}>
                         <Text style={styles.label}>Jam Masuk:</Text>
                         <Text style={styles.value}>{jam_masuk}</Text>
                     </View>
-                    <View style={styles.rightColumn}>
+                    <View style={styles.centerColumn}>
                         <Text style={styles.label}>Jam  Keluar:</Text>
                         <Text style={styles.value}>{jam_keluar}</Text>
                     </View>
+                    <View style={styles.rightColumn}>
+                    <Text style={styles.label}>foto Keluar :</Text>
+
+                        {bukti_keluar && (
+                            <Image source={{ uri: `https://hc.baktitimah.co.id/pegawaian/image/absen_keluar/${bukti_keluar}` }} style={styles.image} />
+                        )}
+
+                    </View>
+
                 </View>
                 <View style={styles.rowContainer}>
-                    <View style={styles.leftColumn}>
+                    <View style={styles.leftColumn1}>
                         <Text style={[styles.label, { marginTop: 10 }]}>Keterangan Absen Pulang</Text>
                         <View style={[styles.statusContainer, { backgroundColor: ketStyle(ketIn).backgroundColor }]}>
                             <Text style={[styles.statusText, { color: ketStyle(ketIn).textColor }]}>{ketStyle(ketIn).text}</Text>
                         </View>
                     </View>
-                    <View style={styles.rightColumn}>
+                    <View style={styles.rightColumn2}>
                         <Text style={[styles.label, { marginTop: 10 }]}>Keterangan Absen Pulang</Text>
                         {/* <Text style={styles.textTengah}>{ketOut}</Text> */}
                         <View style={[styles.statusContainer, { backgroundColor: ketStyle2(ketOut).backgroundColor }]}>
@@ -100,7 +130,8 @@ const styles = StyleSheet.create({
         borderWidth: 0.5,
         borderColor: 'gray',
         borderRadius: 10,
-        marginTop: 10,
+        marginTop: 5,
+        marginBottom: 10,
         padding: 16,
         shadowColor: "#000",
         shadowOffset: {
@@ -120,9 +151,18 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     leftColumn: {
-        width: '45%',
+        width: '30%',
     },
     rightColumn: {
+        width: '30%',
+    },
+    centerColumn: {
+        width: '30%',
+    },
+    leftColumn1: {
+        width: '45%',
+    },
+    rightColumn2: {
         width: '45%',
     },
     column: {
@@ -159,5 +199,13 @@ const styles = StyleSheet.create({
         color: 'black',
         fontWeight: 'bold',
         fontSize: 15,
+    },
+    image: {
+        width: 100,
+        height: 60,
+        borderRadius: 5,
+        margin: 5,
+        borderColor: '#4C70C4',
+
     },
 });

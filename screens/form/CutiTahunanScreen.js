@@ -15,16 +15,7 @@ import LoadingAlert from "../../components/Loading/LoadingAlert";
 function CutiTahunanScreen({ route, isPageCuti }) {
     const navigation = useNavigation();
 
-    const [data, setData] = useState([
-        { label: 'Dalam Daerah', value: 'Dalam Daerah' },
-        { label: 'Luar Daerah', value: 'Luar Daerah' },
-        { label: 'Luar Pulau', value: 'Luar Pulau' },
-    ]);
 
-    const [datajns_cuti, setdatajns_cuti] = useState([
-        { label: 'KHUSUS', value: 'KHUSUS' },
-        { label: 'NORMAL', value: 'NORMAL' },
-    ]);
 
     const [pelaksanaanCuti, setPelaksanaanCuti] = useState(null);
     const [jenisCuti, setJenisCuti] = useState(null);
@@ -43,6 +34,17 @@ function CutiTahunanScreen({ route, isPageCuti }) {
     const [sisaCutiData, setSisaCutiData] = useState({});
 
     const [loading, setLoading] = useState(false);
+
+    const [data, setData] = useState([
+        { label: 'Dalam Daerah', value: 'Dalam Daerah' },
+        { label: 'Luar Daerah', value: 'Luar Daerah' },
+        { label: 'Luar Pulau', value: 'Luar Pulau' },
+    ]);
+
+    const [datajns_cuti, setdatajns_cuti] = useState([
+        { label: 'KHUSUS', value: 'KHUSUS' },
+        { label: 'NORMAL', value: 'NORMAL' },
+    ]);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -90,79 +92,79 @@ function CutiTahunanScreen({ route, isPageCuti }) {
 
     const handleAjukanPress = async () => {
         try {
-          console.log("Mengajukan cuti...");
-          setLoading(true);
-    
-          if (!userData || !userData.id_pegawai) {
-            Alert.alert('Error', 'User data is missing or invalid. Please try again.');
-            setLoading(false);
-            return;
-          }
-    
-          const requestData = {
-            id_pegawai: userData.id_pegawai,
-            tgl_pengajuan: new Date().toISOString().split('T')[0],
-            lama: lamaIzin,
-            tgl_mulai: startDate.toISOString().split('T')[0],
-            tgl_akhir: endDate ? endDate.toISOString().split('T')[0] : null,
-            jns_cuti: jenisCuti,
-            pelaksanaan_cuti: pelaksanaanCuti,
-            keterangan: "lll",
-          };
-    
-          console.log("Request data:", requestData);
-    
-          const url = 'https://hc.baktitimah.co.id/pegawaian/api/API_Cuti/insertCuti';
-    
-          const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(requestData),
-          });
-    
-          console.log("Response received");
-    
-          const contentType = response.headers.get('content-type');
-          if (response.ok && contentType && contentType.includes('application/json')) {
-            const result = await response.json();
-            console.log('API Response:', result);
-    
-            if (result.status === 'success') {
-              Alert.alert(
-                'Success',
-                'Cuti berhasil diajukan',
-                [
-                  {
-                    text: 'OK',
-                    onPress: () => {
-                      navigation.navigate('RiwayatStackScreen', { screen: 'RiwayatPCuti' });
-                    },
-                  },
-                ],
-                { cancelable: false }
-              );
-            } else {
-              Alert.alert('Insert failed', result.message || 'Gagal mengajukan cuti');
+            console.log("Mengajukan cuti...");
+            setLoading(true);
+
+            if (!userData || !userData.id_pegawai) {
+                Alert.alert('Error', 'User data is missing or invalid. Please try again.');
+                setLoading(false);
+                return;
             }
-          } else {
-            const errorText = await response.text();
-            console.error('API Error:', errorText);
-            Alert.alert('Insert failed', 'Invalid response from server');
-          }
+
+            const requestData = {
+                id_pegawai: userData.id_pegawai,
+                tgl_pengajuan: new Date().toISOString().split('T')[0],
+                lama: lamaIzin,
+                tgl_mulai: startDate.toISOString().split('T')[0],
+                tgl_akhir: endDate ? endDate.toISOString().split('T')[0] : null,
+                jns_cuti: jenisCuti,
+                pelaksanaan_cuti: pelaksanaanCuti,
+                keterangan: "lll",
+            };
+
+            console.log("Request data:", requestData);
+
+            const url = 'https://hc.baktitimah.co.id/pegawaian/api/API_Cuti/insertCuti';
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestData),
+            });
+
+            console.log("Response received");
+
+            const contentType = response.headers.get('content-type');
+            if (response.ok && contentType && contentType.includes('application/json')) {
+                const result = await response.json();
+                console.log('API Response:', result);
+
+                if (result.status === 'success') {
+                    Alert.alert(
+                        'Success',
+                        'Cuti berhasil diajukan',
+                        [
+                            {
+                                text: 'OK',
+                                onPress: () => {
+                                    navigation.navigate('RiwayatStackScreen', { screen: 'RiwayatPCuti' });
+                                },
+                            },
+                        ],
+                        { cancelable: false }
+                    );
+                } else {
+                    Alert.alert('Insert failed', result.message || 'Gagal mengajukan cuti');
+                }
+            } else {
+                const errorText = await response.text();
+                console.error('API Error:', errorText);
+                Alert.alert('Insert failed', 'Invalid response from server');
+            }
         } catch (error) {
-          console.error('API Error:', error);
-          Alert.alert('An error occurred', 'Please try again later');
+            console.error('API Error:', error);
+            Alert.alert('An error occurred', 'Please try again later');
         } finally {
-          console.log("Mengakhiri loading");
-          setLoading(false);
+            console.log("Mengakhiri loading");
+            setLoading(false);
         }
-      };
+    };
 
     const handleStartDateChange = (event, selectedDate) => {
         const currentDate = selectedDate || startDate;
-        setShowStartDatePicker(false);
+        setShowStartDatePicker(Platform.OS === 'ios');
         setStartDate(currentDate);
         // Hitung tanggal akhir
         if (lamaIzin !== null) {
@@ -277,18 +279,13 @@ function CutiTahunanScreen({ route, isPageCuti }) {
                         <View>
                             <Text style={styles.text}>Jenis Cuti: </Text>
                             <Dropdown
-                                style={[styles.input, isFocus && { borderColor: 'blue' }, styles.dropdown]}
+                                style={[styles.input, isFocus && { borderColor: 'blue' }]}
                                 placeholderStyle={styles.placeholderStyle}
                                 selectedTextStyle={styles.selectedTextStyle}
-                                inputSearchStyle={styles.inputSearchStyle}
-                                iconStyle={styles.iconStyle}
                                 data={datajns_cuti}
-                                search
-                                maxHeight={300}
                                 labelField="label"
                                 valueField="value"
-                                placeholder={!isFocus ? 'Pilih Jenis Cuti ' : '...'}
-                                searchPlaceholder="Search..."
+                                placeholder={!isFocus ? 'Pilih Jenis Cuti' : '...'}
                                 value={jenisCuti}
                                 onFocus={() => setIsFocus(true)}
                                 onBlur={() => setIsFocus(false)}
@@ -352,7 +349,7 @@ function CutiTahunanScreen({ route, isPageCuti }) {
                                         <DateTimePicker
                                             value={startDate}
                                             mode="date"
-                                            display="default"
+                                            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                                             onChange={handleStartDateChange}
                                         />
                                     )}
@@ -406,7 +403,7 @@ function CutiTahunanScreen({ route, isPageCuti }) {
                                 >
                                     <Text style={styles.textButton}>Ajukan</Text>
                                 </Pressable>
-                                <LoadingAlert visible={loading}/>
+                                <LoadingAlert visible={loading} />
                             </View>
 
                         </View>

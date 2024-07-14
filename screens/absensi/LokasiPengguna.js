@@ -1,23 +1,21 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Alert } from "react-native";
 import React, { useEffect, useState } from 'react';
-import {useNavigation, useRoute } from '@react-navigation/native';
-import { LOKASI } from "../../data/dummy-data";
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { ActivityIndicator } from "react-native-paper";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-
 
 function LokasiPengguna() {
     const route = useRoute();
     const navigation = useNavigation();
 
-    const { latitude, longitude, address } = route.params;
+    const { latitude, longitude } = route.params;
 
     const [targetLocation, setTargetLocation] = useState(null);
     const [userData, setUserData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isError, setIsError] = useState(false);
-    const radius = 0.3; 
+    const [isInArea, setIsInArea] = useState(false); // Tambahkan state ini
+    const radius = 0.1;
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -47,8 +45,7 @@ function LokasiPengguna() {
                     const contentType = response.headers.get('content-type');
                     if (contentType && contentType.indexOf('application/json') !== -1) {
                         const responseData = await response.json();
-                        // console.log(responseData);
-                        setTargetLocation(responseData.data[0]); 
+                        setTargetLocation(responseData.data[0]);
                     } else {
                         throw new Error('Response is not in JSON format');
                     }
@@ -67,13 +64,8 @@ function LokasiPengguna() {
         fetchUserData();
     }, []);
 
-    useEffect(() => {
-        // Lakukan navigasi ke halaman Absensi saat komponen dimuat
-        // navigation.navigate('HalamanAbsensi', { latitude, longitude });
-    }, []);
-
     const isWithinBounds = (lat, lon, targetLocation, radius) => {
-        if (!targetLocation) return false; // Pastikan targetLocation tidak null
+        if (!targetLocation) return false;
 
         const lat_a = parseFloat(targetLocation.lat_a);
         const long_a = parseFloat(targetLocation.long_a);
@@ -83,16 +75,14 @@ function LokasiPengguna() {
         const centerLat = (lat_a + lat_b) / 2;
         const centerLon = (long_a + long_b) / 2;
 
-        // Haversine formula untuk menghitung jarak dalam kilometer
         const distance = haversine(lat, lon, centerLat, centerLon);
 
         return distance <= radius;
     };
 
-    // Haversine formula untuk menghitung jarak antara dua titik koordinat dalam kilometer
     const haversine = (lat1, lon1, lat2, lon2) => {
         const toRadians = (degree) => degree * (Math.PI / 180);
-        const R = 6371; // Radius bumi dalam kilometer
+        const R = 6371;
         const dLat = toRadians(lat2 - lat1);
         const dLon = toRadians(lon2 - lon1);
         const a =
@@ -100,9 +90,20 @@ function LokasiPengguna() {
             Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
             Math.sin(dLon / 2) * Math.sin(dLon / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        const distance = R * c; // Jarak dalam kilometer
-        return distance;
+        return R * c;
     };
+
+    useEffect(() => {
+        if (!isLoading && !isError && targetLocation) {
+            const inArea = isWithinBounds(parseFloat(latitude), parseFloat(longitude), targetLocation, radius);
+            setIsInArea(inArea); // Set state isInArea
+            if (inArea) {
+                navigation.navigate('HalamanAbsenPulang', { latitude, longitude, isInArea: true });
+            } else {
+                Alert.alert('Peringatan!', 'Anda berada di luar area absen.');
+            }
+        }
+    }, [isLoading, isError, targetLocation, latitude, longitude, navigation]);
 
     if (isLoading) {
         return (
@@ -120,14 +121,12 @@ function LokasiPengguna() {
         );
     }
 
-    const isInArea = isWithinBounds(parseFloat(latitude), parseFloat(longitude), targetLocation, radius);
-
     return (
         <View style={styles.container}>
             <Text style={styles.text}>Latitude: {latitude}</Text>
             <Text style={styles.text}>Longitude: {longitude}</Text>
             {isInArea ? (
-                <Text style={styles.inAreaText}>Anda berada di area absen.</Text>
+                <Text style={styles.inAreaText}>Anda berada di dalam area absen.</Text>
             ) : (
                 <Text style={styles.outsideAreaText}>Anda berada di luar area absen.</Text>
             )}

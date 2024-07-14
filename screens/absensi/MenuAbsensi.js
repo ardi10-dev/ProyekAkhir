@@ -93,41 +93,23 @@ function MenuAbsensi({ route }) {
                 const response = await fetch(apiUrl);
                 const absenData = await response.json();
 
-                const jamKeluar = await AsyncStorage.getItem('jam_keluar');
-                console.log('jam keluar yang di simpan',jamKeluar);
-
-                const currentTime = new Date().toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta' });
-                const partst = currentTime.split(".");
-                const hour = partst[0];
-                const minute = partst[1];
-                const second = partst[2];
-                const formattedTime = `${hour}:${minute}:${second}`;
-                console.log('hari ini', formattedTime);
-
                 const filterdata = absenData.data;
 
-                let isTodayAbsen2 = true; // Default set to true
+                const today = new Date().toLocaleDateString('id-ID', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                });
+
+                let isTodayAbsen2 = false;
                 filterdata.forEach((item) => {
-                    if (formattedTime <= item[14]) {
-                        isTodayAbsen2 = false;
-                    } 
-                    else {
+                    if (item[15] == today) {
                         isTodayAbsen2 = true;
                     }
-                    // console.log('jam keluar', item[14]);
-                    // console.log('jam hari', formattedTime);
                 });
-                setBtnPulangDisabel(!isTodayAbsen2);
-
-                // const jamKeluar='09:00:00'
-                // console.log(jamKeluar);
-                // if (formattedTime > jamKeluar) {
-                //     setBtnPulangDisabel(true);
-                // } else {
-                //     setBtnPulangDisabel(false);
-                // }
+                setBtnPulangDisabel(isTodayAbsen2);
             } catch (error) {
-                console.error('Error fetching data keluar:', error);
+                console.error('Error fetching data absen:', error);
             }
         };
 
@@ -188,9 +170,9 @@ function MenuAbsensi({ route }) {
 
     useEffect(() => {
         const backAction = () => {
-            
+
             navigation.navigate("HalamanUtama");
-            return true; 
+            return true;
         };
 
         const backHandler = BackHandler.addEventListener(

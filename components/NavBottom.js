@@ -44,18 +44,8 @@ function NavBottom() {
             const data = await response.json();
             console.log(data);
             if (data.status == 200) {
-                try {
-
-                    await AsyncStorage.removeItem('userData');
-                    navigation.dispatch(
-                        CommonActions.reset({
-                            index: 0,
-                            routes: [{ name: 'Login' }],
-                        })
-                    );
-                } catch (error) {
-                    console.error(error);
-                }
+                await AsyncStorage.removeItem('userData');
+                navigation.navigate('Login'); 
             }
 
             // if (storedUserData) {

@@ -12,7 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoadingAlert from "../../components/Loading/LoadingAlert";
 
 
-function HalamanAbsensi({ isPageAbsen }) {
+function HalamanAbsensi() {
     const navigation = useNavigation();
     const navigate = (route) => navigation.navigate(route);
     const route = useRoute();
@@ -25,7 +25,7 @@ function HalamanAbsensi({ isPageAbsen }) {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [pickedImage, setPickedImage] = useState(null);
     const [pengaturanAbsen, setPengaturanAbsen] = useState(null);
-    const { latitude, longitude } = route.params;
+    const { latitude, longitude, isInArea } = route.params;
     const [valueShiftMasuk, setValueShiftMasuk] = useState();
     const [valueShiftKeluar, setValueShiftKeluar] = useState();
 
@@ -102,6 +102,9 @@ function HalamanAbsensi({ isPageAbsen }) {
             }
             if (!pickedImage) {
                 throw new Error('Wajib Mengupload Foto');
+            }
+            if (!isInArea) {
+                throw new Error('Tidak bisa mengajukan absen karena berada di luar area absen.');
             }
 
             valueshift(value);
