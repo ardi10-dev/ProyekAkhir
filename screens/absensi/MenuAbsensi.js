@@ -60,8 +60,6 @@ function MenuAbsensi({ route }) {
                 const absenData = await response.json();
 
                 const filterdata = absenData.data;
-
-                // Get today's date with Indonesia time zone in yyyy-MM-dd format
                 const today = new Date().toLocaleDateString('id-ID', {
                     year: 'numeric',
                     month: 'long',
@@ -69,54 +67,30 @@ function MenuAbsensi({ route }) {
                 });
 
                 let isTodayAbsen = false;
+                let isTodayAbsen2 = false;
                 filterdata.forEach((item) => {
-                    // Assuming item[4] is in yyyy-MM-dd format
                     if (item[4] == today) {
                         isTodayAbsen = true;
+                    } else if (item[15] == null) {
+                        isTodayAbsen = true;
+                    } else if (item[4] !== null) {
+                        isTodayAbsen2 = true;
                     }
+                    // console.log(item[4]);
+                    // console.log('tgl', item[15]);
                 });
 
                 setBtndisabel(isTodayAbsen);
+                setBtnPulangDisabel(!isTodayAbsen2);
             } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        };
-
-        const fetchDatajadwalKeluar = async () => {
-            try {
-
-                const data = await AsyncStorage.getItem('userData');
-                const userData = JSON.parse(data);
-                const idPegawai = userData.id_pegawai;
-
-                const apiUrl = `https://hc.baktitimah.co.id/pegawaian/api/API_Absen/dataAbsen_get?id_pegawai=${idPegawai}`;
-                const response = await fetch(apiUrl);
-                const absenData = await response.json();
-
-                const filterdata = absenData.data;
-
-                const today = new Date().toLocaleDateString('id-ID', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                });
-
-                let isTodayAbsen2 = false;
-                filterdata.forEach((item) => {
-                    if (item[15] == today) {
-                        isTodayAbsen2 = true;
-                    }
-                });
-                setBtnPulangDisabel(isTodayAbsen2);
-            } catch (error) {
-                console.error('Error fetching data absen:', error);
+                console.error('Error fetching absence data:', error);
             }
         };
 
 
         const focusSubscription = navigation.addListener('focus', () => {
             fetchDatajadwalMasuk();
-            fetchDatajadwalKeluar();
+            
         });
 
         return () => {

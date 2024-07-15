@@ -42,11 +42,11 @@ function HalamanAbsenPulang() {
         fetchUserData();
     }, []);
 
-    useEffect(() => {
-        if (isMockLocation) {
-            navigation.navigate('HalamanUtama');
-        }
-    }, [isMockLocation, navigation]);
+    // useEffect(() => {
+    //     if (isMockLocation) {
+    //         navigation.navigate('HalamanUtama');
+    //     }
+    // }, [isMockLocation, navigation]);
 
     const handleAbsenPulangSubmit = async () => {
         try {
@@ -88,6 +88,8 @@ function HalamanAbsenPulang() {
 
             await AsyncStorage.removeItem('jam_masuk');
             await AsyncStorage.removeItem('jam_keluar');
+            await AsyncStorage.removeItem('in_area');
+
 
             setModalVisible(true);
         } catch (error) {

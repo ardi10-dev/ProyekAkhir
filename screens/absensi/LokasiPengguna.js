@@ -15,7 +15,8 @@ function LokasiPengguna() {
     const [isLoading, setIsLoading] = useState(true);
     const [isError, setIsError] = useState(false);
     const [isInArea, setIsInArea] = useState(false);
-    const radius = 0.1;
+    const [radius, setRadius] = useState(0);
+    // const radius = 0.1;
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -45,7 +46,14 @@ function LokasiPengguna() {
                     const contentType = response.headers.get('content-type');
                     if (contentType && contentType.indexOf('application/json') !== -1) {
                         const responseData = await response.json();
-                        setTargetLocation(responseData.data[0]);
+                        const locationData = responseData.data[0];
+                        setTargetLocation(locationData);
+                        const radiusInMeters = parseInt(locationData.radius, 10);
+                        const radiusInKm = radiusInMeters / 1000;
+                        setRadius(radiusInKm); 
+                        // console.log(locationData);
+                        console.log(radiusInKm);
+
                     } else {
                         throw new Error('Response is not in JSON format');
                     }
@@ -97,8 +105,8 @@ function LokasiPengguna() {
         const checkInArea = async () => {
             if (!isLoading && !isError && targetLocation) {
                 const inArea = isWithinBounds(parseFloat(latitude), parseFloat(longitude), targetLocation, radius);
-                setIsInArea(inArea); 
-                
+                setIsInArea(inArea);
+
                 // Simpan status inArea ke AsyncStorage
                 await AsyncStorage.setItem('in_area', JSON.stringify(inArea));
             }

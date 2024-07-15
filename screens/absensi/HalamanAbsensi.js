@@ -96,6 +96,7 @@ function HalamanAbsensi() {
             const responseData = await response.json();
             console.log(responseData);
             await AsyncStorage.setItem('jam_masuk', new Date().toLocaleTimeString('en-US', { hour12: false }));
+            await AsyncStorage.removeItem('in_area');
             setModalVisible(true);
         } catch (error) {
             // console.error('Error submitting absensi:', error);

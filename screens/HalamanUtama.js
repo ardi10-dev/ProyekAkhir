@@ -62,7 +62,7 @@ function HalamanUtama({ route, isMainPage }) {
             }
         };
 
-        const fetchAbsenceData = async (type) => {
+        const fetchAbsenceData = async () => {
             try {
                 const data = await AsyncStorage.getItem('userData');
                 const userData = JSON.parse(data);
