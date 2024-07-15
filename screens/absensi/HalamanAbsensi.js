@@ -185,13 +185,7 @@ function HalamanAbsensi() {
 
                 <View style={styles.text}>
                     <LokasiPengguna />
-                </View>
-                <View style={styles.text}>
-                    <Text >Alamat : </Text>
-                    <Text >Jl. Umban Sari</Text>
-                </View>
-
-              
+                </View>              
 
                 <View style={styles.photo}>
                     <HalamanGambar onImageTaken={handleImageTaken} />

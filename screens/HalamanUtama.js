@@ -80,21 +80,49 @@ function HalamanUtama({ route, isMainPage }) {
                 });
 
                 let isTodayAbsen = false;
-                let isTodayAbsen2 = false;
                 filterdata.forEach((item) => {
                     if (item[4] == today) {
                         isTodayAbsen = true;
                     } else if (item[15] == null) {
                         isTodayAbsen = true;
-                    }else if(item[4] !==  null){
-                        isTodayAbsen2 = true;
                     }
                     // console.log(item[4]);
                     // console.log('tgl', item[15]);
                 });
 
                 setBtndisabel(isTodayAbsen);
-                setBtnPulangDisabel(!isTodayAbsen2);
+            } catch (error) {
+                console.error('Error fetching absence data:', error);
+            }
+        };
+
+        const fetchAbsenceDataKel = async () => {
+            try {
+                const data = await AsyncStorage.getItem('userData');
+                const userData = JSON.parse(data);
+                const idPegawai = userData.id_pegawai;
+
+                const apiUrl = `https://hc.baktitimah.co.id/pegawaian/api/API_Absen/dataAbsen_get?id_pegawai=${idPegawai}`;
+                const response = await fetch(apiUrl);
+                const absenData = await response.json();
+
+                const filterdata = absenData.data;
+                const today = new Date().toLocaleDateString('id-ID', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                });
+
+                let isTodayAbsen2 = false;
+                filterdata.forEach((item) => {
+                    if (item[15] === today) {
+                        isTodayAbsen2 = true;
+                    }
+                    // console.log(item[4]);
+                    // console.log('tgl', item[15]);
+                });
+
+                setBtnPulangDisabel(isTodayAbsen2);
             } catch (error) {
                 console.error('Error fetching absence data:', error);
             }
@@ -105,7 +133,7 @@ function HalamanUtama({ route, isMainPage }) {
                 const jamMasuk = await AsyncStorage.getItem('jam_masuk');
                 if (jamMasuk !== null) {
                     console.log('Jam Masuk:', jamMasuk);
-                    
+
                     setJam_masukShift(jamMasuk);
                 } else {
                     console.log('Tidak ada jam masuk yang tersimpan.');
@@ -117,8 +145,9 @@ function HalamanUtama({ route, isMainPage }) {
 
         const focusSubscription = navigation.addListener('focus', () => {
             fetchProfileUser();
-            fetchAbsenceData(); 
-            fetchJamMasuk();           
+            fetchAbsenceData();
+            fetchAbsenceDataKel();
+            fetchJamMasuk();
         });
 
         return () => {
