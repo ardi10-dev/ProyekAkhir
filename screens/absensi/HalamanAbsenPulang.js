@@ -11,7 +11,8 @@ import ModalAbsen from "../../components/ModalAbsen";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoadingAlert from "../../components/Loading/LoadingAlert";
 import {useNavigation } from '@react-navigation/native';
-
+import useDetectMockLocationApp from "../../library/useDetectMockLocationApp";
+import * as Location from 'expo-location';
 
 
 function HalamanAbsenPulang() {
@@ -24,6 +25,8 @@ function HalamanAbsenPulang() {
     const [modalVisible, setModalVisible] = useState(false);
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(false);
+    const isMockLocation = useDetectMockLocationApp();
+
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -39,9 +42,18 @@ function HalamanAbsenPulang() {
         fetchUserData();
     }, []);
 
+    useEffect(() => {
+        if (isMockLocation) {
+            navigation.navigate('HalamanUtama');
+        }
+    }, [isMockLocation, navigation]);
+
     const handleAbsenPulangSubmit = async () => {
         try {
             setLoading(true);
+            const inAreaValue = await AsyncStorage.getItem('in_area');
+            const isInArea = inAreaValue !== null ? JSON.parse(inAreaValue) : false;
+
 
             if (!pickedImage) {
                 throw new Error('Wajib Mengupload Foto');

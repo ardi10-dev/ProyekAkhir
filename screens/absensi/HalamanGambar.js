@@ -33,7 +33,7 @@ function HalamanGambar({ onImageTaken }) {
 
         const image = await launchCameraAsync({
             allowsEditing: true,
-            aspect: [1,1],
+            aspect: [1, 1],
             quality: 0.5,
         });
 
@@ -47,31 +47,20 @@ function HalamanGambar({ onImageTaken }) {
                     { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
                 );
 
-                console.log('Manipulated Image URI:', manipulatedImage.uri);
-
-                const newImageUri = `${FileSystem.cacheDirectory}photo.jpg`;
+                const newImageUri = `${FileSystem.cacheDirectory}photo_${Date.now()}.jpg`;
                 await FileSystem.moveAsync({
                     from: manipulatedImage.uri,
                     to: newImageUri,
                 });
 
-                // console.log('New Image URI:', newImageUri);
+                console.log('New Image URI:', newImageUri);
                 setPickedImage(newImageUri);
                 onImageTaken(newImageUri);
             } catch (error) {
                 console.log('Error manipulating image:', error);
             }
-
-            // const resizedImage = await ImageResizer.createResizedImage(
-            //     image.assets[0].uri,
-            //     800, // width
-            //     600, // height
-            //     'JPEG',
-            //     80 // quality
-            // );
-            // console.log('Image URI:', resizedImage.assets[0].uri);
-            // setPickedImage(resizedImage.assets[0].uri);
-            // onImageTaken(resizedImage.assets[0].uri);
+        } else {
+            console.log('Image capture was canceled');
         }
     }
 
@@ -80,7 +69,6 @@ function HalamanGambar({ onImageTaken }) {
     if (pickedImage) {
         imagePreview = <Image style={styles.image} source={{ uri: pickedImage }} />;
     }
-
 
     return (
         <View>

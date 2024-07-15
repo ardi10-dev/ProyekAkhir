@@ -13,8 +13,8 @@ const formatDate = (dateString) => {
 function CardBox({ nama, nip, ketIn, ketOut, tanggal, jam_masuk, jam_keluar, bukti_masuk, bukti_keluar }) {
     const ketStyle = (ketIn) => {
         switch (ketIn) {
-            case 'Tepat Waktu':
-                return { text: 'Tepat Waktu', backgroundColor: 'green', textColor: 'white' };
+            case 'absen_berhasil':
+                return { text: 'Absen Berhasil', backgroundColor: 'green', textColor: 'white' };
             case 'Telat':
                 return { text: 'Telat', backgroundColor: '#FF7777', textColor: 'black' };
             case 'Cuti':
@@ -71,7 +71,7 @@ function CardBox({ nama, nip, ketIn, ketOut, tanggal, jam_masuk, jam_keluar, buk
                     <View style={styles.rightColumn}>
                         <Text style={styles.label}>foto Masuk :</Text>
                         {bukti_masuk && (
-                            <Image  source={{ uri: `https://hc.baktitimah.co.id/pegawaian/image/absen_masuk/${bukti_masuk}` }}  style={styles.image}
+                            <Image source={{ uri: `https://hc.baktitimah.co.id/pegawaian/image/absen_masuk/${bukti_masuk}` }} style={styles.image}
                             />
                         )}
 
@@ -83,13 +83,20 @@ function CardBox({ nama, nip, ketIn, ketOut, tanggal, jam_masuk, jam_keluar, buk
                     <View style={styles.leftColumn}>
                         <Text style={styles.label}>Jam Masuk:</Text>
                         <Text style={styles.value}>{jam_masuk}</Text>
+                        <Text style={[styles.label, { marginTop: 10 }]}>Keterangan Absen Pulang</Text>
                     </View>
                     <View style={styles.centerColumn}>
                         <Text style={styles.label}>Jam  Keluar:</Text>
                         <Text style={styles.value}>{jam_keluar}</Text>
+
+                        <View style={[styles.statusContainer, { backgroundColor: ketStyle(ketIn).backgroundColor }]}>
+                            <Text style={[styles.statusText, { color: ketStyle(ketIn).textColor }]}>{ketStyle(ketIn).text}</Text>
+                        </View>
+
+
                     </View>
                     <View style={styles.rightColumn}>
-                    <Text style={styles.label}>foto Keluar :</Text>
+                        <Text style={styles.label}>foto Keluar :</Text>
 
                         {bukti_keluar && (
                             <Image source={{ uri: `https://hc.baktitimah.co.id/pegawaian/image/absen_keluar/${bukti_keluar}` }} style={styles.image} />
@@ -97,21 +104,6 @@ function CardBox({ nama, nip, ketIn, ketOut, tanggal, jam_masuk, jam_keluar, buk
 
                     </View>
 
-                </View>
-                <View style={styles.rowContainer}>
-                    <View style={styles.leftColumn1}>
-                        <Text style={[styles.label, { marginTop: 10 }]}>Keterangan Absen Pulang</Text>
-                        <View style={[styles.statusContainer, { backgroundColor: ketStyle(ketIn).backgroundColor }]}>
-                            <Text style={[styles.statusText, { color: ketStyle(ketIn).textColor }]}>{ketStyle(ketIn).text}</Text>
-                        </View>
-                    </View>
-                    <View style={styles.rightColumn2}>
-                        <Text style={[styles.label, { marginTop: 10 }]}>Keterangan Absen Pulang</Text>
-                        {/* <Text style={styles.textTengah}>{ketOut}</Text> */}
-                        <View style={[styles.statusContainer, { backgroundColor: ketStyle2(ketOut).backgroundColor }]}>
-                            <Text style={[styles.statusText, { color: ketStyle2(ketOut).textColor }]}>{ketStyle2(ketOut).text}</Text>
-                        </View>
-                    </View>
                 </View>
             </View>
         </View>

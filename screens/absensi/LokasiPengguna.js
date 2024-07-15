@@ -14,7 +14,7 @@ function LokasiPengguna() {
     const [userData, setUserData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isError, setIsError] = useState(false);
-    const [isInArea, setIsInArea] = useState(false); // Tambahkan state ini
+    const [isInArea, setIsInArea] = useState(false);
     const radius = 0.1;
 
     useEffect(() => {
@@ -94,15 +94,17 @@ function LokasiPengguna() {
     };
 
     useEffect(() => {
-        if (!isLoading && !isError && targetLocation) {
-            const inArea = isWithinBounds(parseFloat(latitude), parseFloat(longitude), targetLocation, radius);
-            setIsInArea(inArea); // Set state isInArea
-            if (inArea) {
-                navigation.navigate('HalamanAbsenPulang', { latitude, longitude, isInArea: true });
-            } else {
-                Alert.alert('Peringatan!', 'Anda berada di luar area absen.');
+        const checkInArea = async () => {
+            if (!isLoading && !isError && targetLocation) {
+                const inArea = isWithinBounds(parseFloat(latitude), parseFloat(longitude), targetLocation, radius);
+                setIsInArea(inArea); 
+                
+                // Simpan status inArea ke AsyncStorage
+                await AsyncStorage.setItem('in_area', JSON.stringify(inArea));
             }
-        }
+        };
+
+        checkInArea();
     }, [isLoading, isError, targetLocation, latitude, longitude, navigation]);
 
     if (isLoading) {

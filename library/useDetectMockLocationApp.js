@@ -18,7 +18,7 @@ const useDetectMockLocationApp = () => {
       let location = await Location.getCurrentPositionAsync({});
       if (location.mocked) {
         setIsMockLocation(true);
-        Alert.alert('Warning', 'Detected usage of fake GPS location.');
+        Alert.alert('Peringatan', 'Diteksi menggunakan Pemalsuan GPS');
       } else {
         setIsMockLocation(false);
       }

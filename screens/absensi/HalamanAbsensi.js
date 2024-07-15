@@ -16,6 +16,7 @@ function HalamanAbsensi() {
     const navigation = useNavigation();
     const navigate = (route) => navigation.navigate(route);
     const route = useRoute();
+    const [isNavigating, setIsNavigating] = useState(false);
 
     const [value, setValue] = useState(null);
     const [isFocus, setIsFocus] = useState(false);
@@ -26,8 +27,6 @@ function HalamanAbsensi() {
     const [pickedImage, setPickedImage] = useState(null);
     const [pengaturanAbsen, setPengaturanAbsen] = useState(null);
     const { latitude, longitude, isInArea } = route.params;
-    const [valueShiftMasuk, setValueShiftMasuk] = useState();
-    const [valueShiftKeluar, setValueShiftKeluar] = useState();
 
     const [loading, setLoading] = useState(false);
 
@@ -43,63 +42,22 @@ function HalamanAbsensi() {
             }
         };
 
-        const fetchShiftData = async () => {
-            try {
-                const apiUrl = `https://hc.baktitimah.co.id/pegawaian/api/API_Absen/shift`;
-                const response = await fetch(apiUrl);
-
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-
-                const responseData = await response.json();
-                // console.log('Shift Data Response:', responseData); 
-
-                if (!responseData || !responseData.data || !Array.isArray(responseData.data)) {
-                    throw new Error('Invalid data format received');
-                }
-
-                const formattedData = responseData.data.map(item => ({
-                    label: item.nama_shift,
-                    value: item.id_shift
-                }));
-                setJamKerja(formattedData);
-            } catch (error) {
-                console.error('Error fetching shift data:', error);
-                Alert.alert('Error', 'Gagal mengambil data jam kerja.');
-            }
-        };
+       
 
         fetchUserData();
-        fetchShiftData();
+       
 
     }, []);
-    async function valueshift(idshift) {
-        try {
-            const response = await fetch('https://hc.baktitimah.co.id/pegawaian/api/API_Absen/shift', {
-                method: 'GET'
-            });
-            const data = await response.json();
-            // console.log(data.data);
 
-            for (const item of data.data) {
-                if (item.id_shift === idshift) {
-                    await AsyncStorage.setItem('jam_masuk', item.waktu_masuk);
-                    await AsyncStorage.setItem('jam_keluar', item.waktu_keluar);
-                }
-            }
-        } catch (err) {
-            console.log(err);
-        }
-    }
+   
 
     const handleAbsensiSubmit = async () => {
         try {
             setLoading(true);
+            
+            const inAreaValue = await AsyncStorage.getItem('in_area');
+            const isInArea = inAreaValue !== null ? JSON.parse(inAreaValue) : false;
 
-            if (!value) {
-                throw new Error('Jam Kerja Harus Dipilih.');
-            }
             if (!pickedImage) {
                 throw new Error('Wajib Mengupload Foto');
             }
@@ -107,7 +65,7 @@ function HalamanAbsensi() {
                 throw new Error('Tidak bisa mengajukan absen karena berada di luar area absen.');
             }
 
-            valueshift(value);
+            
             const formData = new FormData();
             formData.append('photo', {
                 uri: pickedImage,
@@ -119,9 +77,6 @@ function HalamanAbsensi() {
             formData.append('nm_unit_usaha', userData.nm_unit_usaha);
             formData.append('id_pegawai', userData.id_pegawai);
             formData.append('tgl_absen', new Date().toISOString().split('T')[0]);
-            formData.append('id_shift', value);
-            // formData.append('waktu_masuk', new Date().toLocaleTimeString('en-US', { hour12: false }));
-            // formData.append('waktu_masuk', new Date(Date.now()).toLocaleTimeString('en-US', { hour12: false }));
             formData.append('longitude', longitude.toString());
             formData.append('latitude', latitude.toString());
 
@@ -140,6 +95,7 @@ function HalamanAbsensi() {
 
             const responseData = await response.json();
             console.log(responseData);
+            await AsyncStorage.setItem('jam_masuk', new Date().toLocaleTimeString('en-US', { hour12: false }));
             setModalVisible(true);
         } catch (error) {
             // console.error('Error submitting absensi:', error);
@@ -178,10 +134,8 @@ function HalamanAbsensi() {
         } catch {
             setLoading(false);
         }
-
-
-
     };
+    
 
     useEffect(() => {
         // if (!isMainPage) return;
@@ -236,31 +190,7 @@ function HalamanAbsensi() {
                     <Text >Jl. Umban Sari</Text>
                 </View>
 
-                <View style={styles.ket}>
-                    <Text style={[{ fontWeight: 'bold' }]}>Pilih jam Kerja</Text>
-                    <Dropdown
-                        style={[styles.input, isFocus && { borderColor: 'blue' }, styles.dropdown]}
-                        placeholderStyle={styles.placeholderStyle}
-                        selectedTextStyle={styles.selectedTextStyle}
-                        inputSearchStyle={styles.inputSearchStyle}
-                        iconStyle={styles.iconStyle}
-                        data={jamKerja}
-                        search={false}
-                        maxHeight={300}
-                        labelField="label"
-                        valueField="value"
-                        placeholder={!isFocus ? 'Select item' : '...'}
-                        searchPlaceholder="Search..."
-                        value={value}
-                        onFocus={() => setIsFocus(true)}
-                        onBlur={() => setIsFocus(false)}
-                        onChange={item => {
-                            setValue(item.value);
-                            setIsFocus(false);
-                        }}
-                        renderLeftIcon={() => <AntDesign style={styles.icon} name="Safety" size={20} />}
-                    />
-                </View>
+              
 
                 <View style={styles.photo}>
                     <HalamanGambar onImageTaken={handleImageTaken} />
