@@ -14,6 +14,7 @@ import DefaultProfileImage from '../assets/user.png';
 import * as Location from 'expo-location';
 import useDetectMockLocationApp from "../library/useDetectMockLocationApp";
 import LoadingAlert from "../components/Loading/LoadingAlert";
+import ModalKeluar from "../components/ModalKeluar";
 
 
 
@@ -32,6 +33,8 @@ function HalamanUtama({ route, isMainPage }) {
     const [waktu, setWaktu] = useState(new Date());
     const [jamMasukShift, setJamMasukShift] = useState("00:00:00");
     const [jamKeluarShift, setJamKeluarShift] = useState("00:00:00");
+
+    const [modalVisible, setModalVisible] = useState(false);
 
 
     useEffect(() => {
@@ -253,7 +256,7 @@ function HalamanUtama({ route, isMainPage }) {
                 setIsNavigating(false);
                 return;
             }
-            navigation.navigate('HalamanAbsenPulang', { latitude, longitude , id_absen_pegawai});
+            navigation.navigate('HalamanAbsenPulang', { latitude, longitude, id_absen_pegawai });
         } catch (error) {
             Alert.alert('Error', 'Failed to get location.');
         } finally {
@@ -280,6 +283,7 @@ function HalamanUtama({ route, isMainPage }) {
             const data = await response.json();
             console.log(data);
             if (data.status == 200) {
+                await AsyncStorage.removeItem('userData');
                 navigation.navigate("Login")
             }
 
@@ -301,28 +305,24 @@ function HalamanUtama({ route, isMainPage }) {
             setLoading(false);
         }
     };
+    const backAction = () => {
+        setModalVisible(true);
+        return true;
+    };
 
     useEffect(() => {
-        // if (!isMainPage) return;
-        const backAction = () => {
-            Alert.alert("Apakah Anda ingin keluar? ", "Mohon menggunakan button back diatas", [
-                {
-                    text: "Cancel",
-                    onPress: () => null,
-                    style: "cancel"
-                },
-                { text: "YES", onPress: () => buttonLogOut2Handler(navigation), }
-            ]);
-            return true;
-        };
-
-        const backHandler = BackHandler.addEventListener(
-            "hardwareBackPress",
-            backAction
-        );
-
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
         return () => backHandler.remove();
     }, [navigation]);
+
+    const handleCancel = () => {
+        setModalVisible(false);
+    };
+
+    const handleConfirm = () => {
+        setModalVisible(false);
+        buttonLogOut2Handler(navigation);
+    };
 
     const getImageSource = () => {
         if (profileUser && profileUser.image) {
@@ -443,6 +443,11 @@ function HalamanUtama({ route, isMainPage }) {
                                 </View>
                             </Pressable>
                         </View>
+                        <ModalKeluar
+                            visible={modalVisible}
+                            onCancel={handleCancel}
+                            onConfirm={handleConfirm}
+                        />
 
 
                     </View>

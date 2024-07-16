@@ -9,6 +9,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import LoadingAlert from "../../components/Loading/LoadingAlert";
+import SuccessModal from "../../components/SuccessModal";
+import GagalModal from "../../components/GagalModal";
 
 
 
@@ -31,6 +33,9 @@ function DispensasiScreen() {
     const [jenisIzinData, setJenisIzinData] = useState([]);
 
     const [loading, setLoading] = useState(false);
+
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [isModalVisibleGgl, setIsModalVisibleGgl] = useState(false);
 
 
 
@@ -110,26 +115,14 @@ function DispensasiScreen() {
                 // console.log('API Response:', result);
 
                 if (result.status === 'success') {
-                    Alert.alert(
-                        'Success',
-                        'Izin berhasil diajukan',
-                        [
-                            {
-                                text: 'OK',
-                                onPress: () => {
-                                    navigation.navigate('RiwayatStackScreen', { screen: 'RiwayatIzin' });
-                                },
-                            },
-                        ],
-                        { cancelable: false }
-                    );
+                    setIsModalVisible(true);
+
                 } else {
-                    Alert.alert('Insert failed', result.message || 'Gagal mengajukan cuti');
+                    setIsModalVisibleGgl(true);
                 }
             } else {
                 const errorText = await response.text();
-                console.error('API Error:', errorText);
-                Alert.alert('Insert failed', 'Invalid response from server');
+                setIsModalVisibleGgl(true);
             }
         } catch (error) {
             console.error('API Error:', error);
@@ -354,7 +347,7 @@ function DispensasiScreen() {
                         <View>
                             <Text style={styles.text}>Alasan Izin/Dispensasi: </Text>
                             <TextPanjang value={alasan} onChangeText={handleChangeAlasan}
-                                 />
+                            />
                         </View>
 
                         <View style={[{ marginTop: 20, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }]}>
@@ -369,6 +362,11 @@ function DispensasiScreen() {
                                     <Text style={styles.textButton}>Ajukan</Text>
                                 </Pressable>
                                 <LoadingAlert visible={loading} />
+                                <SuccessModal visible={isModalVisible} onClose={() => setIsModalVisible(false)}
+                                    onConfirm={() => navigation.navigate('RiwayatStackScreen', { screen: 'RiwayatIzin' })}
+                                />
+                                <GagalModal visible={isModalVisibleGgl} onClose={() => setIsModalVisibleGgl(false)}
+                                />
                             </View>
 
                         </View>

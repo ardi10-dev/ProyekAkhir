@@ -2,23 +2,60 @@ import { View, Text, Image, StyleSheet, SafeAreaView, TextInput, ScrollView, Pre
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CommonActions } from "@react-navigation/native";
 import { PEGAWAI } from "../data/dummy-data";
 import { getCurrentPositionAsync, useForegroundPermissions, PermissionStatus } from 'expo-location';
-
-
-
+import * as Animatable from "react-native-animatable";
+import { useFocusEffect } from '@react-navigation/native';
 
 function Login({ navigation }) {
-
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setLoading] = useState(false);
     const [text1, setText1] = useState('');
     const [text2, setText2] = useState('');
+    const imageRef = useRef(null);
+    const formRef = useRef(null);
+    const formRef2 = useRef(null);
+    const [isAnimating, setIsAnimating] = useState(false);
+
+
+    const startAnimation = async () => {
+        if (imageRef.current) {
+            await formRef.current.fadeOut(5);
+            await formRef2.current.fadeOut(5);
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Jeda 1 detik (1000 ms)
+            await imageRef.current.fadeIn(1000);
+
+            // Tambahkan jeda sebelum fadeOut
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Jeda 1 detik (1000 ms)
+
+            await imageRef.current.fadeOut(1000);
+        }
+        if (formRef.current) {
+            await formRef.current.fadeInUp(1000);
+        }
+        if (formRef2.current) {
+            await formRef2.current.fadeInUp(1000);
+        }
+    };
+
+    useFocusEffect(
+        React.useCallback(() => {
+            startAnimation();
+        }, [])
+    );
 
     useEffect(() => {
+        // imageRef.current?.fadeIn(1000).then(() => {
+        //     imageRef.current?.fadeOut(1000).then(() => {
+        //         formRef.current?.fadeInUp(1000).then(() => {
+        //             formRef2.current?.fadeInUp(1000);
+        //         });
+        //     });
+        // });
+
         const loadTexts = async () => {
             try {
                 const storedEmail = await AsyncStorage.getItem('text1');
@@ -35,6 +72,7 @@ function Login({ navigation }) {
         };
         const checkToken = async () => {
             try {
+
                 const storedUserData = await AsyncStorage.getItem('userData');
                 const userData = storedUserData ? JSON.parse(storedUserData) : null;
 
@@ -67,9 +105,16 @@ function Login({ navigation }) {
                 setLoading(false);
             }
         };
-        
+
+        const performTasks = async () => {
+            await checkToken();
+        };
+
+        performTasks();
         loadTexts();
-        checkToken();
+
+        
+
     }, [navigation]);
 
     const handleEmailChange = async (text) => {
@@ -118,6 +163,14 @@ function Login({ navigation }) {
                         token: result.token,
                     };
                     await AsyncStorage.setItem('userData', JSON.stringify(userData));
+
+                    if (formRef.current) {
+                        await formRef.current.fadeOut(1000);
+                    }
+                    if (formRef2.current) {
+                        await formRef2.current.fadeOut(1000);
+                    }
+
                     navigation.navigate('HalamanUtama', { userData });
                 } else {
                     Alert.alert('Login failed', result.message || 'Invalid username or password');
@@ -144,11 +197,14 @@ function Login({ navigation }) {
             <SafeAreaView style={[styles.rootContainer, { backgroundColor: '#E7F4FE', flex: 1 }]}>
                 <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
                     <View style={[{ backgroundColor: '#E7F4FE' }]}>
-                        <View style={styles.imageContainer}>
+                        <Animatable.View ref={imageRef} style={styles.imageContainer2}>
                             <Image source={require('../assets/ihc.png')} />
-                        </View>
-                        <View style={[{ marginTop: 30 }]}>
-                            <View>
+                        </Animatable.View>
+                        <Animatable.View ref={formRef} style={[{ opacity: 1 }]}>
+                            <View style={[{ marginTop: -300 }]}>
+                                <Image source={require('../assets/ihc.png')} />
+                            </View>
+                            <View style={[{ marginTop: 50 }]}>
                                 <Text style={[styles.text]}>Email</Text>
                                 <TextInput
                                     style={styles.input}
@@ -167,7 +223,9 @@ function Login({ navigation }) {
                                     returnKeyType="done"
                                 />
                             </View>
-                            <View style={[{ marginTop: 80 }]}>
+                        </Animatable.View>
+                        <Animatable.View ref={formRef2} style={[{ opacity: 0 }]}>
+                            <View style={[{ marginTop: 50 }]}>
                                 <Pressable
                                     style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton]}
                                     onPress={buttonLoginHandler}
@@ -175,7 +233,7 @@ function Login({ navigation }) {
                                     <Text style={styles.textButton}>Login</Text>
                                 </Pressable>
                             </View>
-                        </View>
+                        </Animatable.View>
                     </View>
                 </ScrollView>
             </SafeAreaView>
@@ -184,6 +242,7 @@ function Login({ navigation }) {
 }
 
 export default Login;
+
 const styles = StyleSheet.create({
     rootContainer: {
         padding: 12,
@@ -194,7 +253,14 @@ const styles = StyleSheet.create({
         fontSize: 18,
     },
     imageContainer: {
-        paddingTop: '40%'
+        paddingTop: '40%',
+        alignItems: 'center',
+    },
+    imageContainer2: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 200,
+        marginTop: 300,
     },
     image: {
         width: 200,
@@ -234,5 +300,4 @@ const styles = StyleSheet.create({
     utama: {
 
     }
-
 });

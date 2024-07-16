@@ -10,6 +10,8 @@ import LokasiPengguna from "./LokasiPengguna";
 import ModalAbsen from "../../components/ModalAbsen";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoadingAlert from "../../components/Loading/LoadingAlert";
+import SuksesAbsen from "../../components/SuksesAbsen";
+import GagalAbsen from "../../components/GagalAbsen";
 
 
 function HalamanAbsensi() {
@@ -29,6 +31,9 @@ function HalamanAbsensi() {
     const { latitude, longitude, isInArea } = route.params;
 
     const [loading, setLoading] = useState(false);
+
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [isModalVisibleGgl, setIsModalVisibleGgl] = useState(false);
 
 
     useEffect(() => {
@@ -59,7 +64,9 @@ function HalamanAbsensi() {
             const isInArea = inAreaValue !== null ? JSON.parse(inAreaValue) : false;
 
             if (!pickedImage) {
-                throw new Error('Wajib Mengupload Foto');
+                // throw new Error('Wajib Mengupload Foto');
+                setIsModalVisibleGgl(true);
+
             }
             if (!isInArea) {
                 throw new Error('Tidak bisa mengajukan absen karena berada di luar area absen.');
@@ -95,25 +102,25 @@ function HalamanAbsensi() {
 
             const responseData = await response.json();
             console.log(responseData);
-           if (responseData && responseData.idAP) {
-            console.log('idAP:', responseData.idAP);
-            await AsyncStorage.setItem('id_absen_pegawai', responseData.idAP.toString());
-        } else {
-            throw new Error('idAP tidak ditemukan dalam response dari server.');
-        }
+            if (responseData && responseData.idAP) {
+                console.log('idAP:', responseData.idAP);
+                await AsyncStorage.setItem('id_absen_pegawai', responseData.idAP.toString());
+            } else {
+                throw new Error('idAP tidak ditemukan dalam response dari server.');
+            }
             await AsyncStorage.setItem('jam_masuk', new Date().toLocaleTimeString('en-US', { hour12: false }));
             await AsyncStorage.removeItem('in_area');
-            setModalVisible(true);
+            setIsModalVisible(true);
         } catch (error) {
             // console.error('Error submitting absensi:', error);
-            Alert.alert('Peringatan!!', error.message);
+            setIsModalVisibleGgl(true);
         } finally {
             setLoading(false);
         }
     };
 
     const closeModal = () => {
-        setModalVisible(false);
+        setIsModalVisible(false);
         // navigation.navigate('RiwayatAbsen');
         navigation.navigate('RiwayatStackScreen', { screen: 'RiwayatAbsen' });
     };
@@ -205,7 +212,11 @@ function HalamanAbsensi() {
                     </Pressable>
                 </View>
                 <LoadingAlert visible={loading} />
-                <ModalAbsen visible={modalVisible} closeModal={closeModal} />
+                {/* <ModalAbsen visible={modalVisible} closeModal={closeModal} /> */}
+                <SuksesAbsen visible={isModalVisible} closeModal={closeModal}
+                />
+                <GagalAbsen visible={isModalVisibleGgl} onClose={() => setIsModalVisibleGgl(false)}
+                />
 
                 {/* <SuccessModal  /> */}
             </ScrollView>

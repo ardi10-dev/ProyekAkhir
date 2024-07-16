@@ -9,6 +9,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import LoadingAlert from "../../components/Loading/LoadingAlert";
+import TextPanjang from "../../components/TextPanjang";
+import SuccessModal from "../../components/SuccessModal";
+import GagalModal from "../../components/GagalModal";
+
 
 
 
@@ -24,8 +28,9 @@ function CutiTahunanScreen({ route, isPageCuti }) {
 
     const [startDate, setStartDate] = useState(new Date());
     const [lamaIzin, setLamaIzin] = useState(null);
-    const [endDate, setEndDate] = useState(null);
+    const [endDate, setEndDate] = useState(new Date());
     const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+    const [showEndDatePicker, setShowEndDatePicker] = useState(false);
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
 
     const [userData, setUserData] = useState(null);
@@ -34,6 +39,11 @@ function CutiTahunanScreen({ route, isPageCuti }) {
     const [sisaCutiData, setSisaCutiData] = useState({});
 
     const [loading, setLoading] = useState(false);
+    const today = new Date();
+    const [alasan, setAlasan] = useState('');
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [isModalVisibleGgl, setIsModalVisibleGgl] = useState(false);
+
 
     const [data, setData] = useState([
         { label: 'Dalam Daerah', value: 'Dalam Daerah' },
@@ -106,10 +116,10 @@ function CutiTahunanScreen({ route, isPageCuti }) {
                 tgl_pengajuan: new Date().toISOString().split('T')[0],
                 lama: lamaIzin,
                 tgl_mulai: startDate.toISOString().split('T')[0],
-                tgl_akhir: endDate ? endDate.toISOString().split('T')[0] : null,
+                tgl_akhir: endDate.toISOString().split('T')[0],
                 jns_cuti: jenisCuti,
                 pelaksanaan_cuti: pelaksanaanCuti,
-                keterangan: "lll",
+                keterangan: alasan,
             };
 
             console.log("Request data:", requestData);
@@ -132,26 +142,16 @@ function CutiTahunanScreen({ route, isPageCuti }) {
                 console.log('API Response:', result);
 
                 if (result.status === 'success') {
-                    Alert.alert(
-                        'Success',
-                        'Cuti berhasil diajukan',
-                        [
-                            {
-                                text: 'OK',
-                                onPress: () => {
-                                    navigation.navigate('RiwayatStackScreen', { screen: 'RiwayatPCuti' });
-                                },
-                            },
-                        ],
-                        { cancelable: false }
-                    );
+                    setIsModalVisible(true);
                 } else {
-                    Alert.alert('Insert failed', result.message || 'Gagal mengajukan cuti');
+                    setIsModalVisibleGgl(true);
+                    // Alert.alert('Insert failed', result.message || 'Gagal mengajukan cuti');
                 }
             } else {
                 const errorText = await response.text();
-                console.error('API Error:', errorText);
-                Alert.alert('Insert failed', 'Invalid response from server');
+                setIsModalVisibleGgl(true);
+                // console.error('API Error:', errorText);
+                // Alert.alert('Insert failed', 'Invalid response from server');
             }
         } catch (error) {
             console.error('API Error:', error);
@@ -164,19 +164,54 @@ function CutiTahunanScreen({ route, isPageCuti }) {
 
     const handleStartDateChange = (event, selectedDate) => {
         const currentDate = selectedDate || startDate;
-        setShowStartDatePicker(Platform.OS === 'ios');
+        console.log("Selected Date:", currentDate);
+
+        if (currentDate < today.setDate(today.getDate())) {
+            Alert.alert(
+                "Tanggal tidak valid",
+                "Silakan pilih tanggal mulai minimal satu hari setelah hari ini.",
+                [
+                    { text: "OK", onPress: () => setShowStartDatePicker(false) }
+                ]
+            );
+            return;
+        }
+
         setStartDate(currentDate);
-        // Hitung tanggal akhir
-        if (lamaIzin !== null) {
-            const endDate = new Date(currentDate);
-            endDate.setDate(endDate.getDate() + parseInt(lamaIzin));
-            setEndDate(endDate);
+        setShowStartDatePicker(false);
+        console.log("New Start Date:", currentDate);
+    };
+
+
+    const handleEndDateChange = (event, selectedDate) => {
+        const currentDate = selectedDate || endDate;
+        setEndDate(currentDate);
+        setShowEndDatePicker(false);
+    };
+
+    let isPressingStart = false;
+    let isPressingEnd = false;
+
+    const handleStartDatePress = () => {
+        if (!showStartDatePicker && !isPressingStart) {
+            isPressingStart = true;
+            setShowStartDatePicker(true);
+            setTimeout(() => {
+                isPressingStart = false;
+            }, 300); // Delay 300 ms
         }
     };
 
-    const handleStartDatePress = () => {
-        setShowStartDatePicker(true);
+    const handleEndDatePress = () => {
+        if (!showEndDatePicker && !isPressingEnd) {
+            isPressingEnd = true;
+            setShowEndDatePicker(true);
+            setTimeout(() => {
+                isPressingEnd = false;
+            }, 300); // Delay 300 ms
+        }
     };
+
     const formattedDate = (date) => {
         return date.toLocaleDateString('id-ID', {
             day: 'numeric',
@@ -227,6 +262,9 @@ function CutiTahunanScreen({ route, isPageCuti }) {
         return () => backHandler.remove();
     }, [navigation]);
 
+    const handleChangeAlasan = (text) => {
+        setAlasan(text);
+    };
 
 
 
@@ -335,7 +373,7 @@ function CutiTahunanScreen({ route, isPageCuti }) {
                                 )}
                             />
                         </View>
-                        <View>
+                        {/* <View style={styles.inputContainer}>
                             <Text style={styles.text}>Tanggal Pelaksanaan : </Text>
                             <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
                                 <View style={styles.column}>
@@ -356,19 +394,13 @@ function CutiTahunanScreen({ route, isPageCuti }) {
 
                                 </View>
                             </View>
-                        </View>
+                        </View> */}
                         <View>
-                            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-                                <View style={styles.column}>
-                                    <Text style={styles.text}>Tanggal Mulai</Text>
-                                </View>
-                                <View style={styles.column}>
-                                    <Text style={styles.text}>Tanggal Akhir</Text>
-                                </View>
+                            <Text style={styles.text}>Tanggal Pelaksanaan : </Text>
+                            <View style={{ justifyContent: 'center', alignItems: 'center', marginTop: 10 }}>
+                                <Text style={styles.text}>Tanggal Mulai:</Text>
                             </View>
-                        </View>
-                        <View>
-                            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 10 }}>
                                 <View style={styles.column}>
                                     <TextInput
                                         style={[styles.input, { color: 'black' }]}
@@ -377,19 +409,66 @@ function CutiTahunanScreen({ route, isPageCuti }) {
                                     />
                                 </View>
                                 <View style={styles.column}>
+                                    <Pressable
+                                        style={styles.buttonJam}
+                                        onPress={handleStartDatePress}
+                                    >
+                                        <AntDesign name="calendar" size={24} color="white" />
+                                    </Pressable>
+                                    {showStartDatePicker && (
+                                        <DateTimePicker
+                                            value={startDate}
+                                            mode="date"
+                                            display="default"
+                                            onChange={handleStartDateChange}
+                                        />
+                                    )}
+
+                                </View>
+
+                            </View>
+                        </View>
+                        <View>
+                            <View style={{ justifyContent: 'center', alignItems: 'center', marginTop: 10 }}>
+                                <Text style={styles.text}>Tanggal Akhir:</Text>
+                            </View>
+                            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 10 }}>
+                                <View style={styles.column}>
                                     <TextInput
                                         style={[styles.input, { color: 'black' }]}
-                                        value={endDate ? formattedDate(endDate) : '-'}
+                                        value={formattedDate(endDate)}
                                         editable={false}
                                     />
                                 </View>
+                                <View style={styles.column}>
+                                    <Pressable
+                                        style={({ pressed }) => [styles.buttonJam, pressed && styles.pressedButton]}
+                                        onPress={handleEndDatePress}
+                                    >
+                                        <AntDesign name="calendar" size={24} color="white" />
+                                    </Pressable>
+                                    {showEndDatePicker && (
+                                        <DateTimePicker
+                                            value={endDate}
+                                            mode="date"
+                                            display="default"
+                                            onChange={handleEndDateChange}
+                                            editable={false}
+                                        />
+                                    )}
+
+                                </View>
+
                             </View>
                         </View>
-
                         <View>
                             <Text style={styles.text}>Sisa Cuti: </Text>
                             <Inputan value={sisaCuti !== null ? `${sisaCuti} hari` : ''}
                                 editable={false} />
+                        </View>
+                        <View>
+                            <Text style={styles.text}>Keterangan : </Text>
+                            <TextPanjang value={alasan} onChangeText={handleChangeAlasan} />
                         </View>
 
                         <View style={[{ marginTop: 20, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }]}>
@@ -404,6 +483,11 @@ function CutiTahunanScreen({ route, isPageCuti }) {
                                     <Text style={styles.textButton}>Ajukan</Text>
                                 </Pressable>
                                 <LoadingAlert visible={loading} />
+                                <SuccessModal visible={isModalVisible} onClose={() => setIsModalVisible(false)}
+                                    onConfirm={() => navigation.navigate('RiwayatStackScreen', { screen: 'RiwayatPCuti' })}
+                                />
+                                <GagalModal visible={isModalVisibleGgl} onClose={() => setIsModalVisibleGgl(false)}
+                                      />
                             </View>
 
                         </View>
@@ -424,6 +508,7 @@ const styles = StyleSheet.create({
         flexGrow: 1,
         paddingVertical: 30,
         paddingHorizontal: 0,
+        marginBottom: 15,
     },
     text: {
         marginTop: 15,
@@ -459,12 +544,16 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.8,
         shadowRadius: 0.8,
         elevation: 5,
+        marginBottom: 10,
     },
     buttonContainer: {
-        padding: 12,
+        paddingVertical: 12,
+        paddingHorizontal: 16,
         backgroundColor: '#008DDA',
         borderRadius: 10,
         alignItems: 'center',
+        zIndex: 1,
+        borderWidth: 1,
     },
     textButton: {
         fontWeight: 'bold',
@@ -483,5 +572,18 @@ const styles = StyleSheet.create({
         fontSize: 15,
         justifyContent: 'center',
     },
+    inputContainer: {
+        marginBottom: 20,
+        position: 'relative',
+    },
+    buttonJam: {
+        backgroundColor: '#008DDA',
+        borderRadius: 10,
+        alignItems: 'center',
+        height: 40,
+        width: 40,
+        justifyContent: 'center',
+        marginTop: 10,
+    }
 
 });

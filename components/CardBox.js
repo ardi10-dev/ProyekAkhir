@@ -72,7 +72,7 @@ function CardBox({ nama, nip, ketIn, ketOut, tanggal, jam_masuk, jam_keluar, buk
                         <Text style={styles.label}>NIP:</Text>
                         <Text style={styles.value}>{nip}</Text>
                         <Text style={styles.value}>----------------------</Text>
-                        <Text style={styles.label}>tgl Absen Masuk:</Text>
+                        <Text style={styles.label}>tgl Absen Keluar:</Text>
                         <Text style={styles.value}>{tgl_out}</Text>
                         <Text style={styles.value}>----------------------</Text>
                     </View>

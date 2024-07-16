@@ -78,6 +78,20 @@ function NavBottom() {
     };
 
     // useEffect(() => {
+    //     const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
+    //     return () => backHandler.remove();
+    // }, [navigation]);
+
+    const handleCancel = () => {
+        setModalVisible(false);
+    };
+
+    const handleConfirm = () => {
+        setModalVisible(false);
+        buttonLogOut2Handler(navigation);
+    };
+
+    // useEffect(() => {
     //     const backAction = () => {
     //         Alert.alert("Hold on!", "Apakah Anda ingin Keluar Aplikasi?", [
     //             {
@@ -137,7 +151,12 @@ function NavBottom() {
                         </View>
                     </View>
                 </View>
-                <ModalLogout visible={isModalVisible} closeModal={toggleModal} logoutHandler={buttonLogOut2Handler} />
+                {/* <ModalLogout visible={isModalVisible} closeModal={toggleModal} logoutHandler={buttonLogOut2Handler} /> */}
+                <ModalLogout
+                            visible={isModalVisible}
+                            onCancel={handleCancel}
+                            onConfirm={handleConfirm}
+                        />
             </View>
         </View>
     );

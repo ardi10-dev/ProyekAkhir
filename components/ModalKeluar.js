@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, View, Text, StyleSheet, Pressable } from 'react-native';
 
-const ModalLogout = ({ visible, onCancel, onConfirm }) => {
+const ModalKeluar = ({ visible, onCancel, onConfirm }) => {
   return (
     <Modal
       animationType="slide"
@@ -91,4 +91,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ModalLogout;
+export default ModalKeluar;

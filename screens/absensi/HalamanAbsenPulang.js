@@ -13,6 +13,8 @@ import LoadingAlert from "../../components/Loading/LoadingAlert";
 import { useNavigation } from '@react-navigation/native';
 import useDetectMockLocationApp from "../../library/useDetectMockLocationApp";
 import * as Location from 'expo-location';
+import SuksesAbsen from "../../components/SuksesAbsen";
+import GagalAbsen from "../../components/GagalAbsen";
 
 
 function HalamanAbsenPulang() {
@@ -26,6 +28,8 @@ function HalamanAbsenPulang() {
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(false);
     const isMockLocation = useDetectMockLocationApp();
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [isModalVisibleGgl, setIsModalVisibleGgl] = useState(false);
 
 
     useEffect(() => {
@@ -59,7 +63,7 @@ function HalamanAbsenPulang() {
 
 
             if (!pickedImage) {
-                throw new Error('Wajib Mengupload Foto');
+                setIsModalVisibleGgl(true);
             }
 
             if (!isInArea) {
@@ -99,15 +103,17 @@ function HalamanAbsenPulang() {
 
 
 
-            setModalVisible(true);
+            setIsModalVisible(true);
         } catch (error) {
-            Alert.alert('Peringatan!!', error.message);
+            // Alert.alert('Peringatan!!', error.message);
+            setIsModalVisibleGgl(true);
+
         } finally {
             setLoading(false);
         }
     };
     const closeModal = async () => {
-        setModalVisible(false);
+        setIsModalVisible(false);
         await AsyncStorage.removeItem('in_area');
         await AsyncStorage.removeItem('id_absen_pegawai');
         navigation.navigate('RiwayatStackScreen', { screen: 'RiwayatAbsen' });
@@ -182,6 +188,11 @@ function HalamanAbsenPulang() {
                 <LoadingAlert visible={loading} />
                 <ModalAbsen visible={modalVisible} closeModal={closeModal} />
                 {/* <SuccessModal  /> */}
+                <SuksesAbsen visible={isModalVisible} closeModal={closeModal}
+                />
+                <GagalAbsen visible={isModalVisibleGgl} onClose={() => setIsModalVisibleGgl(false)}
+                />
+                
             </ScrollView>
         </SafeAreaView>
     );
