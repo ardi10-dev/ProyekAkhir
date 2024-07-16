@@ -10,7 +10,7 @@ import LokasiPengguna from "./LokasiPengguna";
 import ModalAbsen from "../../components/ModalAbsen";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoadingAlert from "../../components/Loading/LoadingAlert";
-import {useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import useDetectMockLocationApp from "../../library/useDetectMockLocationApp";
 import * as Location from 'expo-location';
 
@@ -20,7 +20,7 @@ function HalamanAbsenPulang() {
     const route = useRoute();
     const navigation = useNavigation();
 
-    const { latitude, longitude, isInArea } = route.params;
+    const { latitude, longitude, isInArea, id_absen_pegawai } = route.params;
     const [pickedImage, setPickedImage] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
     const [userData, setUserData] = useState(null);
@@ -29,6 +29,7 @@ function HalamanAbsenPulang() {
 
 
     useEffect(() => {
+
         const fetchUserData = async () => {
             try {
                 const userDataJson = await AsyncStorage.getItem('userData');
@@ -48,6 +49,8 @@ function HalamanAbsenPulang() {
     //     }
     // }, [isMockLocation, navigation]);
 
+
+
     const handleAbsenPulangSubmit = async () => {
         try {
             setLoading(true);
@@ -63,6 +66,7 @@ function HalamanAbsenPulang() {
                 throw new Error('Tidak bisa mengajukan absen karena berada di luar area absen.');
             }
 
+
             const formData = new FormData();
             formData.append('photo', {
                 uri: pickedImage,
@@ -70,6 +74,9 @@ function HalamanAbsenPulang() {
                 name: 'photo.jpg',
             });
             formData.append('id_pegawai', userData.id_pegawai);
+            formData.append('id_absen_pegawai', id_absen_pegawai);
+            console.log('id_absen_pegawai hhh', id_absen_pegawai);
+
             formData.append('tgl_absen', new Date().toISOString().split('T')[0]);
             formData.append('waktu_keluar', new Date().toLocaleTimeString('en-US', { hour12: false }));
             formData.append('longitude', longitude.toString());
@@ -86,9 +93,10 @@ function HalamanAbsenPulang() {
                 throw new Error(`Server error: ${response.status} - ${errorMessage}`);
             }
 
-            await AsyncStorage.removeItem('jam_masuk');
-            await AsyncStorage.removeItem('jam_keluar');
-            await AsyncStorage.removeItem('in_area');
+            // await AsyncStorage.removeItem('jam_masuk');
+            // await AsyncStorage.removeItem('jam_keluar');
+            await AsyncStorage.setItem('jam_keluar', new Date().toLocaleTimeString('en-US', { hour12: false }));
+
 
 
             setModalVisible(true);
@@ -98,8 +106,10 @@ function HalamanAbsenPulang() {
             setLoading(false);
         }
     };
-    const closeModal = () => {
+    const closeModal = async () => {
         setModalVisible(false);
+        await AsyncStorage.removeItem('in_area');
+        await AsyncStorage.removeItem('id_absen_pegawai');
         navigation.navigate('RiwayatStackScreen', { screen: 'RiwayatAbsen' });
     };
 

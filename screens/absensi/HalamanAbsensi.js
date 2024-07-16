@@ -42,19 +42,19 @@ function HalamanAbsensi() {
             }
         };
 
-       
+
 
         fetchUserData();
-       
+
 
     }, []);
 
-   
+
 
     const handleAbsensiSubmit = async () => {
         try {
             setLoading(true);
-            
+
             const inAreaValue = await AsyncStorage.getItem('in_area');
             const isInArea = inAreaValue !== null ? JSON.parse(inAreaValue) : false;
 
@@ -65,7 +65,7 @@ function HalamanAbsensi() {
                 throw new Error('Tidak bisa mengajukan absen karena berada di luar area absen.');
             }
 
-            
+
             const formData = new FormData();
             formData.append('photo', {
                 uri: pickedImage,
@@ -95,6 +95,12 @@ function HalamanAbsensi() {
 
             const responseData = await response.json();
             console.log(responseData);
+           if (responseData && responseData.idAP) {
+            console.log('idAP:', responseData.idAP);
+            await AsyncStorage.setItem('id_absen_pegawai', responseData.idAP.toString());
+        } else {
+            throw new Error('idAP tidak ditemukan dalam response dari server.');
+        }
             await AsyncStorage.setItem('jam_masuk', new Date().toLocaleTimeString('en-US', { hour12: false }));
             await AsyncStorage.removeItem('in_area');
             setModalVisible(true);
@@ -136,7 +142,7 @@ function HalamanAbsensi() {
             setLoading(false);
         }
     };
-    
+
 
     useEffect(() => {
         // if (!isMainPage) return;
@@ -185,7 +191,7 @@ function HalamanAbsensi() {
 
                 <View style={styles.text}>
                     <LokasiPengguna />
-                </View>              
+                </View>
 
                 <View style={styles.photo}>
                     <HalamanGambar onImageTaken={handleImageTaken} />

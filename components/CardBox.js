@@ -10,7 +10,7 @@ const formatDate = (dateString) => {
 };
 
 
-function CardBox({ nama, nip, ketIn, ketOut, tanggal, jam_masuk, jam_keluar, bukti_masuk, bukti_keluar }) {
+function CardBox({ nama, nip, ketIn, ketOut, tanggal, jam_masuk, jam_keluar, bukti_masuk, bukti_keluar, tgl_out }) {
     const ketStyle = (ketIn) => {
         switch (ketIn) {
             case 'absen_berhasil':
@@ -63,10 +63,18 @@ function CardBox({ nama, nip, ketIn, ketOut, tanggal, jam_masuk, jam_keluar, buk
                     <View style={styles.leftColumn}>
                         <Text style={styles.label}>Nama:</Text>
                         <Text style={styles.value}>{nama}</Text>
+                        <Text style={styles.value}>----------------------</Text>
+                        <Text style={styles.label}>tgl Absen Masuk:</Text>
+                        <Text style={styles.value}>{tanggal}</Text>
+                        <Text style={styles.value}>----------------------</Text>
                     </View>
                     <View style={styles.centerColumn}>
                         <Text style={styles.label}>NIP:</Text>
                         <Text style={styles.value}>{nip}</Text>
+                        <Text style={styles.value}>----------------------</Text>
+                        <Text style={styles.label}>tgl Absen Masuk:</Text>
+                        <Text style={styles.value}>{tgl_out}</Text>
+                        <Text style={styles.value}>----------------------</Text>
                     </View>
                     <View style={styles.rightColumn}>
                         <Text style={styles.label}>foto Masuk :</Text>

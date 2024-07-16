@@ -94,6 +94,7 @@ function RiwayatAbsen() {
         const jam_keluar = item[8] || '';
         const bukti_masuk = item[11] || '';
         const bukti_keluar = item[12] || '';
+        const tgl_out = item[15] || '';
 
         return (
             <CardBox
@@ -107,6 +108,7 @@ function RiwayatAbsen() {
                 jam_keluar={jam_keluar}
                 bukti_masuk={bukti_masuk}
                 bukti_keluar={bukti_keluar}
+                tgl_out={tgl_out}
 
             />
         );

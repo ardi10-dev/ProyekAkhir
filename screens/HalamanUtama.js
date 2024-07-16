@@ -142,12 +142,27 @@ function HalamanUtama({ route, isMainPage }) {
                 console.error('Error checking jam_masuk:', error);
             }
         };
+        const fetchJamKeluar = async () => {
+            try {
+                const jamKeluar = await AsyncStorage.getItem('jam_keluar');
+                if (jamKeluar !== null) {
+                    console.log('Jam Keluar:', jamKeluar);
+
+                    setJam_KeluarShift(jamKeluar);
+                } else {
+                    console.log('Tidak ada jam masuk yang tersimpan.');
+                }
+            } catch (error) {
+                console.error('Error checking jam_keluar:', error);
+            }
+        };
 
         const focusSubscription = navigation.addListener('focus', () => {
             fetchProfileUser();
             fetchAbsenceData();
             fetchAbsenceDataKel();
             fetchJamMasuk();
+            fetchJamKeluar();
         });
 
         return () => {
@@ -217,6 +232,9 @@ function HalamanUtama({ route, isMainPage }) {
     };
 
     async function buttonAbsensPulangHandler() {
+        const id_absen_pegawai = await AsyncStorage.getItem('id_absen_pegawai');
+        console.log('id_absen_pegawai', id_absen_pegawai);
+
         if (isNavigating) return;
         setIsNavigating(true);
         try {
@@ -235,7 +253,7 @@ function HalamanUtama({ route, isMainPage }) {
                 setIsNavigating(false);
                 return;
             }
-            navigation.navigate('HalamanAbsenPulang', { latitude, longitude });
+            navigation.navigate('HalamanAbsenPulang', { latitude, longitude , id_absen_pegawai});
         } catch (error) {
             Alert.alert('Error', 'Failed to get location.');
         } finally {
