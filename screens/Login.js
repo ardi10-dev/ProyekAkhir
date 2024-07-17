@@ -22,17 +22,6 @@ function Login({ navigation }) {
 
 
     const startAnimation = async () => {
-        if (imageRef.current) {
-            await formRef.current.fadeOut(5);
-            await formRef2.current.fadeOut(5);
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Jeda 1 detik (1000 ms)
-            await imageRef.current.fadeIn(1000);
-
-            // Tambahkan jeda sebelum fadeOut
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Jeda 1 detik (1000 ms)
-
-            await imageRef.current.fadeOut(1000);
-        }
         if (formRef.current) {
             await formRef.current.fadeInUp(1000);
         }
@@ -197,11 +186,8 @@ function Login({ navigation }) {
             <SafeAreaView style={[styles.rootContainer, { backgroundColor: '#E7F4FE', flex: 1 }]}>
                 <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
                     <View style={[{ backgroundColor: '#E7F4FE' }]}>
-                        <Animatable.View ref={imageRef} style={styles.imageContainer2}>
-                            <Image source={require('../assets/ihc.png')} />
-                        </Animatable.View>
                         <Animatable.View ref={formRef} style={[{ opacity: 1 }]}>
-                            <View style={[{ marginTop: -300 }]}>
+                            <View style={[{ marginTop: 200 }]}>
                                 <Image source={require('../assets/ihc.png')} />
                             </View>
                             <View style={[{ marginTop: 50 }]}>

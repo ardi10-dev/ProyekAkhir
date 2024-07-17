@@ -105,6 +105,12 @@ function CutiTahunanScreen({ route, isPageCuti }) {
             console.log("Mengajukan cuti...");
             setLoading(true);
 
+            if (sisaCutiData.jatah_cuti == 0) {
+                Alert.alert('Error', 'Sisa cuti Anda tidak mencukupi untuk mengajukan cuti.');
+                setLoading(false);
+                return;
+            }
+
             if (!userData || !userData.id_pegawai) {
                 Alert.alert('Error', 'User data is missing or invalid. Please try again.');
                 setLoading(false);
@@ -176,17 +182,17 @@ function CutiTahunanScreen({ route, isPageCuti }) {
             );
             return;
         }
+        setShowStartDatePicker(false);
 
         setStartDate(currentDate);
-        setShowStartDatePicker(false);
         console.log("New Start Date:", currentDate);
     };
 
 
     const handleEndDateChange = (event, selectedDate) => {
         const currentDate = selectedDate || endDate;
-        setEndDate(currentDate);
         setShowEndDatePicker(false);
+        setEndDate(currentDate);
     };
 
     let isPressingStart = false;
@@ -478,7 +484,7 @@ function CutiTahunanScreen({ route, isPageCuti }) {
                             <View style={[styles.column]}>
                                 <Pressable
                                     style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton,]}
-                                    onPress={handleAjukanPress}
+                                    onPress={handleAjukanPress} disabled={sisaCuti === 0}
                                 >
                                     <Text style={styles.textButton}>Ajukan</Text>
                                 </Pressable>

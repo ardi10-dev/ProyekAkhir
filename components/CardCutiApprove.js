@@ -27,6 +27,11 @@ function CardCutiApprove({ Id_pegawai_cuti, nama, nip, ket, jenisIzin, tanggal, 
         console.log(Id_pegawai_cuti);
     }
 
+    function buttonDetailCuti() {
+        navigation.navigate('DetailApproveCutiUbah', { id: Id_pegawai_cuti });
+        console.log(Id_pegawai_cuti);
+    }
+
 
 
     return (
@@ -72,10 +77,10 @@ function CardCutiApprove({ Id_pegawai_cuti, nama, nip, ket, jenisIzin, tanggal, 
                 <View style={styles.rowContainer}>
                     <View style={[styles.rightColumn, { marginTop: 10, }]}>
                         {/* <Pressable
-                            style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton, { backgroundColor: '#E4003A', }]}
-                            onPress={''}
+                            style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton, { backgroundColor: '#008DDA', }]}
+                            onPress={buttonDetailCuti}
                         >
-                            <Text style={styles.textButton}>TOLAK</Text>
+                            <Text style={styles.textButton}>UBAH</Text>
                         </Pressable> */}
                     </View>
                     <View style={[styles.rightColumn, { marginTop: 10, }]}>
@@ -105,7 +110,7 @@ const styles = StyleSheet.create({
         borderWidth: 0.5,
         borderColor: 'gray',
         borderRadius: 10,
-        marginTop: 5, 
+        marginTop: 5,
         marginBottom: 5,
         padding: 16,
         shadowColor: "#000",

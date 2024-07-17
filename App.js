@@ -30,6 +30,8 @@ import ApprovalCuti from './screens/approval/ApprovalCuti';
 import DetailApprovalCuti from './screens/approval/DetailApprovalCuti';
 import ApprovalLembur from './screens/approval/ApprovalLembur';
 import DetailApprovalLembur from './screens/approval/DetailApprovalLembur';
+import SplashScreen from './screens/SplashScreen';
+import DetailApproveCutiUbah from './screens/approval/DetailApproveCutiUbah';
 
 const Stack = createNativeStackNavigator();
 const RiwayatStack = createNativeStackNavigator();
@@ -307,6 +309,29 @@ function AprovalStackScreen({ navigation }) {
       />
 
       <AprovalStack.Screen
+        name="DetailApproveCutiUbah"
+        component={DetailApproveCutiUbah}
+        options={{
+          title: 'Detail Approval Cuti',
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate('ApprovalCuti')
+              }
+              style={{
+                backgroundColor: 'transparent',
+                padding: 10,
+                borderRadius: 5,
+                borderColor: '#fff',
+              }}
+            >
+              <Ionicons name="return-up-back" size={30} color="#fff" style={{ marginRight: 5 }} />
+            </TouchableOpacity>
+          ),
+        }}
+      />
+
+      <AprovalStack.Screen
         name="ApprovalLembur"
         component={ApprovalLembur}
         options={{
@@ -368,6 +393,11 @@ function RootStack() {
         },
         headerTitleAlign: 'center',
       }}>
+        <Stack.Screen
+        name="SplashScreen"
+        component={SplashScreen}
+        options={{ headerShown: false }}
+      />
       <Stack.Screen
         name="Login"
         component={Login}
