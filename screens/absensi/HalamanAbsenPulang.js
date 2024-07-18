@@ -22,7 +22,7 @@ function HalamanAbsenPulang() {
     const route = useRoute();
     const navigation = useNavigation();
 
-    const { latitude, longitude, isInArea, id_absen_pegawai } = route.params;
+    const { latitude, longitude, isInArea } = route.params;
     const [pickedImage, setPickedImage] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
     const [userData, setUserData] = useState(null);
@@ -30,6 +30,7 @@ function HalamanAbsenPulang() {
     const isMockLocation = useDetectMockLocationApp();
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isModalVisibleGgl, setIsModalVisibleGgl] = useState(false);
+    const [getIdAbsenPegawai, setIdAbsenPegawai] = useState(null);
 
 
     useEffect(() => {
@@ -44,6 +45,39 @@ function HalamanAbsenPulang() {
             }
         };
 
+        const checkIdAbsenTerakhir = async () => {
+            setLoading(true); // Set loading before fetching
+            try {
+                const data = await AsyncStorage.getItem('userData');
+                if (data) {
+                    const userData = JSON.parse(data);
+                    const idPegawai = userData.id_pegawai;
+
+                    const response = await fetch('https://hc.baktitimah.co.id/pegawaian/api/API_Absen/last_absen_id', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `id_pegawai=${idPegawai}`
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+
+                    const responseData = await response.json();
+                    // console.log(responseData.last_id);
+                    // const sortedData = responseData.data.sort((a, b) => parseDate(b[4]) - parseDate(a[4]));
+                    setIdAbsenPegawai(responseData.last_id);
+                    // setFilteredData(sortedData);
+                }
+            } catch (error) {
+                console.error('Error fetching riwayat izin:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        checkIdAbsenTerakhir();
         fetchUserData();
     }, []);
 
@@ -78,8 +112,8 @@ function HalamanAbsenPulang() {
                 name: 'photo.jpg',
             });
             formData.append('id_pegawai', userData.id_pegawai);
-            formData.append('id_absen_pegawai', id_absen_pegawai);
-            console.log('id_absen_pegawai hhh', id_absen_pegawai);
+            formData.append('id_absen_pegawai', getIdAbsenPegawai);
+            console.log('id_absen_pegawai hhh', getIdAbsenPegawai);
 
             formData.append('tgl_absen', new Date().toISOString().split('T')[0]);
             formData.append('waktu_keluar', new Date().toLocaleTimeString('en-US', { hour12: false }));

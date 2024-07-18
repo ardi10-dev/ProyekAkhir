@@ -117,15 +117,22 @@ function HalamanUtama({ route, isMainPage }) {
                 });
 
                 let isTodayAbsen2 = false;
+                let hasNull = false;
+
                 filterdata.forEach((item) => {
-                    if (item[15] === today) {
-                        isTodayAbsen2 = true;
+                    if (item[15] === null) {
+                        hasNull = true;
+                        isTodayAbsen2 = false;
                     }
                     // console.log(item[4]);
-                    // console.log('tgl', item[15]);
+                    console.log('tgl', item[15]);
                 });
 
-                setBtnPulangDisabel(isTodayAbsen2);
+                if (!hasNull) {
+                    setBtnPulangDisabel(true);
+                } else {
+                    setBtnPulangDisabel(isTodayAbsen2);
+                }
             } catch (error) {
                 console.error('Error fetching absence data:', error);
             }
@@ -150,15 +157,18 @@ function HalamanUtama({ route, isMainPage }) {
                 const jamKeluar = await AsyncStorage.getItem('jam_keluar');
                 if (jamKeluar !== null) {
                     console.log('Jam Keluar:', jamKeluar);
-
-                    setJam_KeluarShift(jamKeluar);
+                    setJamKeluarShift(jamKeluar);
                 } else {
-                    console.log('Tidak ada jam masuk yang tersimpan.');
+                    console.log('Tidak ada jam keluar yang tersimpan.');
+                    setJamKeluarShift("00:00:00"); // Atur nilai default jika tidak ada data jam_keluar
                 }
             } catch (error) {
                 console.error('Error checking jam_keluar:', error);
+                setJamKeluarShift("00:00:00"); // Atur nilai default jika terjadi kesalahan
             }
         };
+
+
 
         const focusSubscription = navigation.addListener('focus', () => {
             fetchProfileUser();
@@ -225,6 +235,7 @@ function HalamanUtama({ route, isMainPage }) {
                 setIsNavigating(false);
                 return;
             }
+            await AsyncStorage.removeItem('jam_keluar');
 
             navigation.navigate('HalamanAbsensi', { latitude, longitude });
         } catch (error) {
@@ -235,8 +246,8 @@ function HalamanUtama({ route, isMainPage }) {
     };
 
     async function buttonAbsensPulangHandler() {
-        const id_absen_pegawai = await AsyncStorage.getItem('id_absen_pegawai');
-        console.log('id_absen_pegawai', id_absen_pegawai);
+        // const id_absen_pegawai = await AsyncStorage.getItem('id_absen_pegawai');
+        // console.log('id_absen_pegawai', id_absen_pegawai);
 
         if (isNavigating) return;
         setIsNavigating(true);
@@ -256,7 +267,7 @@ function HalamanUtama({ route, isMainPage }) {
                 setIsNavigating(false);
                 return;
             }
-            navigation.navigate('HalamanAbsenPulang', { latitude, longitude, id_absen_pegawai });
+            navigation.navigate('HalamanAbsenPulang', { latitude, longitude });
         } catch (error) {
             Alert.alert('Error', 'Failed to get location.');
         } finally {
@@ -405,7 +416,7 @@ function HalamanUtama({ route, isMainPage }) {
                             <Text style={[styles.textTengah, { fontWeight: 'bold', fontSize: 15 }]}>{(jam_masukShift) ? jam_masukShift : "00:00:00"}</Text>
                         </View>
                         <View style={styles.column2}>
-                            <Text style={[styles.textTengah, { fontWeight: 'bold', fontSize: 15 }]}>{(jam_KeluarShift) ? jam_KeluarShift : "00:00:00"}</Text>
+                            <Text style={[styles.textTengah, { fontWeight: 'bold', fontSize: 15 }]}> {jam_KeluarShift ? jam_KeluarShift : "00:00:00"}</Text>
                         </View>
                     </View>
 

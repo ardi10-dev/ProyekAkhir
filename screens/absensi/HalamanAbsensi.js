@@ -110,6 +110,7 @@ function HalamanAbsensi() {
             }
             await AsyncStorage.setItem('jam_masuk', new Date().toLocaleTimeString('en-US', { hour12: false }));
             await AsyncStorage.removeItem('in_area');
+            
             setIsModalVisible(true);
         } catch (error) {
             // console.error('Error submitting absensi:', error);

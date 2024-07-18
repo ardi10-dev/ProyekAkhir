@@ -99,15 +99,22 @@ function MenuAbsensi({ route }) {
                 });
 
                 let isTodayAbsen2 = false;
+                let hasNull = false;
+
                 filterdata.forEach((item) => {
-                    if (item[15] === today) {
-                        isTodayAbsen2 = true;
+                    if (item[15] === null) {
+                        hasNull = true;
+                        isTodayAbsen2 = false;
                     }
                     // console.log(item[4]);
-                    // console.log('tgl', item[15]);
+                    console.log('tgl', item[15]);
                 });
 
-                setBtnPulangDisabel(isTodayAbsen2);
+                if (!hasNull) {
+                    setBtnPulangDisabel(true);
+                } else {
+                    setBtnPulangDisabel(isTodayAbsen2);
+                }
             } catch (error) {
                 console.error('Error fetching absence data:', error);
             }
