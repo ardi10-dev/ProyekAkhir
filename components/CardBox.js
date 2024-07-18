@@ -91,7 +91,7 @@ function CardBox({ nama, nip, ketIn, ketOut, tanggal, jam_masuk, jam_keluar, buk
                     <View style={styles.leftColumn}>
                         <Text style={styles.label}>Jam Masuk:</Text>
                         <Text style={styles.value}>{jam_masuk}</Text>
-                        <Text style={[styles.label, { marginTop: 10 }]}>Keterangan Absen Pulang</Text>
+                        <Text style={[styles.label, { marginTop: 10 }]}>Keterangan Absen</Text>
                     </View>
                     <View style={styles.centerColumn}>
                         <Text style={styles.label}>Jam  Keluar:</Text>
