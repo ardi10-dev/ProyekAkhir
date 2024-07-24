@@ -62,10 +62,10 @@ function CardLembur({ nama, nip, ket, jenisIzin, tanggal, waktu_mulai, waktu_akh
                             <Text style={[styles.statusText,{ color: ketStyle(ket).textColor }]}>{ketStyle(ket).text}</Text>
                         </View>
                     </View>
-                    <View style={styles.rightColumn}>
-                        <Text style={[styles.label, { marginTop: 10 }]}>Jenis Cuti:</Text>
+                    {/* <View style={styles.rightColumn}>
+                        <Text style={[styles.label, { marginTop: 10 }]}>Jenis Lembur:</Text>
                         <Text style={styles.textTengah}>{jenisIzin}</Text>
-                    </View>
+                    </View> */}
                 </View>
                 
             </View>

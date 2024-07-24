@@ -8,13 +8,23 @@ import TextPanjang from "../../components/TextPanjang";
 import { useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoadingAlert from "../../components/Loading/LoadingAlert";
+import TextPanjangApp from "../../components/TextPanjangApp";
+import SuksesModalApp from "../../components/SuksesModalApp";
+import GagalModalApp from "../../components/GagalModalApp";
 
 
-function DetailApprovalLembur({ route, navigation }){
+function DetailApprovalLembur({ route, navigation }) {
     const [dataDetail, setDataDetail] = useState();
     const userData = route.params && route.params.userData ? route.params.userData : {};
     const [alasan, setAlasan] = useState('');
     const [loading, setLoading] = useState(false);
+    const [isStatusOne, setIsStatusOne] = useState(false);
+    const [alasanApp, setAlasanApp] = useState('');
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [isModalVisibleGgl, setIsModalVisibleGgl] = useState(false);
+    const [dataDetailApp, setDataDetailApp] = useState();
+
+
 
 
 
@@ -52,6 +62,43 @@ function DetailApprovalLembur({ route, navigation }){
             const data = await response.json();
             setDataDetail(data.data);
             // console.log(setDataDetail);
+            if (data.data[0]?.status === '1' || data.data[0]?.status === '2') {
+                setIsStatusOne(true);
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
+    const fetchDataApp = async () => {
+        try {
+            const id_pegawai_lembur_req = route.params.id;
+            const response = await fetch('https://hc.baktitimah.co.id/pegawaian/api/API_Lembur/getLemburApp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `id_pegawai_lembur_req=${encodeURIComponent(id_pegawai_lembur_req)}`
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            setDataDetailApp(data.data);
+            if (data.data && data.data.length > 0 && data.data[0].keterangan !== undefined) {
+                setAlasanApp(data.data[0].keterangan);
+            } else {
+                setAlasanApp('');
+            }
+
+            // setAlasan(data.data[0].keterangan ?? '');
+            console.log(data.data);
+            // if (data.data[0]?.status === '1' || data.data[0]?.status === '2') {
+            //     setIsStatusOne(true);
+            // }
+            // dataDetail && (dataDetail[0]?.status === '1' || dataDetail[0]?.status === '2')
         } catch (err) {
             console.log(err);
         }
@@ -59,13 +106,13 @@ function DetailApprovalLembur({ route, navigation }){
 
     useEffect(() => {
         fetchData();
-        // fetchUserId();
+        fetchDataApp();
     }, [])
 
     const buttonMenuDetail = async () => {
         try {
-            if (!alasan.trim()) { 
-                Alert.alert('Peringatan', 'Silakan isi catatan sebelum menyetujui.');
+            if (!alasan.trim()) {
+                setIsModalVisibleGgl(true);
                 return;
             }
             setLoading(true);
@@ -116,21 +163,9 @@ function DetailApprovalLembur({ route, navigation }){
                 // console.log('API Response:', result);
 
                 if (result.status === 'success') {
-                    Alert.alert(
-                        'Success',
-                        'Approve Berhasil di Simpan',
-                        [
-                            {
-                                text: 'OK',
-                                onPress: () => {
-                                    navigation.navigate('ApprovalLembur');
-                                },
-                            },
-                        ],
-                        { cancelable: false }
-                    );
+                    setIsModalVisible(true);
                 } else {
-                    Alert.alert('Insert failed', result.message || 'Gagal Approve cuti');
+                    setIsModalVisibleGgl(true);
                 }
             } else {
                 const errorText = await response.text();
@@ -140,15 +175,15 @@ function DetailApprovalLembur({ route, navigation }){
         } catch (error) {
             console.error('API Error:', error);
             Alert.alert('An error occurred', 'Please try again later');
-        }finally {
+        } finally {
             setLoading(false);
         }
     };
 
     const buttonMenuDetailTolak = async () => {
         try {
-            if (!alasan.trim()) { 
-                Alert.alert('Peringatan', 'Silakan isi catatan sebelum menyetujui.');
+            if (!alasan.trim()) {
+                setIsModalVisibleGgl(true);
                 return;
             }
             setLoading(true);
@@ -199,21 +234,9 @@ function DetailApprovalLembur({ route, navigation }){
                 // console.log('API Response:', result);
 
                 if (result.status === 'success') {
-                    Alert.alert(
-                        'Success',
-                        'Berhasil Di Simpan',
-                        [
-                            {
-                                text: 'OK',
-                                onPress: () => {
-                                    navigation.navigate('AprovalLembur');
-                                },
-                            },
-                        ],
-                        { cancelable: false }
-                    );
+                    setIsModalVisible(true);
                 } else {
-                    Alert.alert('Insert failed', result.message || 'Gagal mengajukan cuti');
+                    setIsModalVisibleGgl(true);
                 }
             } else {
                 const errorText = await response.text();
@@ -223,7 +246,7 @@ function DetailApprovalLembur({ route, navigation }){
         } catch (error) {
             console.error('API Error:', error);
             Alert.alert('An error occurred', 'Please try again later');
-        }finally {
+        } finally {
             setLoading(false);
         }
     };
@@ -262,6 +285,10 @@ function DetailApprovalLembur({ route, navigation }){
 
         return () => backHandler.remove();
     }, [navigation]);
+
+    const handleChangeAlasan2 = (text) => {
+        setAlasanApp(text);
+    };
 
     return (
         <SafeAreaView style={{ backgroundColor: '#E7F4FE', flex: 1 }}>
@@ -303,32 +330,53 @@ function DetailApprovalLembur({ route, navigation }){
                             </View>
                         </>
                     )}
-                    <View>
-                        <Text style={styles.text}>Catatan Dari Approve:: </Text>
-                        <TextPanjang value={alasan} onChangeText={handleChangeAlasan} />
-                    </View>
+                    {dataDetailApp && (
+                        <View>
+                            <Text style={styles.text}>Catatan Dari Approve: </Text>
+                            {alasanApp === '' ? (
+                                <TextPanjang value={alasan} onChangeText={handleChangeAlasan} />
+                            ) : (
+                                <TextInput
+                                    style={styles.input2}
+                                    multiline={true}
+                                    numberOfLines={4}
+                                    textAlignVertical="top"
+                                    value={alasanApp}
+                                    onChangeText={handleChangeAlasan2}
+                                    editable={false}
 
-                    <View style={[{ marginTop: 20, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }]}>
-                        <View style={[styles.column]}>
-                            <Pressable
-                                style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton, { backgroundColor: 'red', }]}
-                                onPress={buttonMenuDetailTolak}
-                            >
-                                <Text style={styles.textButton}>TOLAK</Text>
-                            </Pressable>
+                                />
+                            )}
                         </View>
-                        <View style={[styles.column]}>
-                            <Pressable
-                                style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton, { backgroundColor: '#008DDA', }]}
-                                onPress={buttonMenuDetail}
-                            >
-                                <Text style={styles.textButton}>APPROVE</Text>
-                            </Pressable>
-                            <LoadingAlert visible={loading} />
+                    )}
 
+                    {!isStatusOne && (
+                        <View style={{ marginTop: 20, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                            <View style={styles.column}>
+                                <Pressable
+                                    style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton, { backgroundColor: 'red' }]}
+                                    onPress={buttonMenuDetailTolak}
+                                >
+                                    <Text style={styles.textButton}>TOLAK</Text>
+                                </Pressable>
+                            </View>
+                            <View style={styles.column}>
+                                <Pressable
+                                    style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton, { backgroundColor: '#008DDA' }]}
+                                    onPress={buttonMenuDetail}
+                                >
+                                    <Text style={styles.textButton}>APPROVE</Text>
+                                </Pressable>
+                                <LoadingAlert visible={loading} />
+                                <SuksesModalApp visible={isModalVisible} onClose={() => setIsModalVisible(false)}
+                                    onConfirm={() => navigation.navigate('AprovalStackScreen', { screen: 'ApprovalLembur' })}
+                                />
+                                <GagalModalApp visible={isModalVisibleGgl} onClose={() => setIsModalVisibleGgl(false)}
+                                />
+                            </View>
                         </View>
 
-                    </View>
+                    )}
 
 
                 </View>
@@ -390,6 +438,17 @@ const styles = StyleSheet.create({
     },
     pressedButton: {
         opacity: 0.5,
+    },
+    input2: {
+        borderWidth: 1,
+        borderColor: '#4C70C4',
+        borderRadius: 10,
+        padding: 10,
+        marginTop: 10,
+        fontSize: 15,
+        textAlignVertical: 'top',
+        fontWeight: 'bold',
+        color: 'black',
     },
 
 });

@@ -52,7 +52,7 @@ function LokasiPengguna() {
                         const radiusInKm = radiusInMeters / 1000;
                         setRadius(radiusInKm); 
                         // console.log(locationData);
-                        console.log(radiusInKm);
+                        // console.log(radiusInKm);
 
                     } else {
                         throw new Error('Response is not in JSON format');

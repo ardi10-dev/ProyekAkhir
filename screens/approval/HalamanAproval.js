@@ -49,7 +49,7 @@ function HalamanAproval() {
                         onPress={buttonAprovalIzinHandler}
                     >
                         <View style={styles.buttonContent}>
-                            <Text style={styles.textButton}>Aproval Izin</Text>
+                            <Text style={styles.textButton}>Approval Izin</Text>
                             <MaterialIcons name="navigate-next" size={30} color="white" />
                         </View>
                     </Pressable>
@@ -58,7 +58,7 @@ function HalamanAproval() {
                     <Pressable style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton]}
                         onPress={buttonAprovalCutiHandler}>
                         <View style={styles.buttonContent}>
-                            <Text style={styles.textButton}>Aproval Cuti</Text>
+                            <Text style={styles.textButton}>Approval Cuti</Text>
                             <MaterialIcons name="navigate-next" size={30} color="white" />
                         </View>
                     </Pressable>
@@ -67,7 +67,7 @@ function HalamanAproval() {
                     <Pressable style={({ pressed }) => [styles.buttonContainer, pressed && styles.pressedButton]}
                         onPress={buttonAprovalLemburHandler}>
                         <View style={styles.buttonContent}>
-                            <Text style={styles.textButton}>Aproval Lembur</Text>
+                            <Text style={styles.textButton}>Approval Lembur</Text>
                             <MaterialIcons name="navigate-next" size={30} color="white" />
                         </View>
                     </Pressable>

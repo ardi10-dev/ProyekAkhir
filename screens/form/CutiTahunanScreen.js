@@ -52,7 +52,7 @@ function CutiTahunanScreen({ route, isPageCuti }) {
     ]);
 
     const [datajns_cuti, setdatajns_cuti] = useState([
-        { label: 'KHUSUS', value: 'KHUSUS' },
+        { label: 'CUTI TAHUNAN', value: 'CUTI TAHUNAN' },
         { label: 'NORMAL', value: 'NORMAL' },
     ]);
 

@@ -254,7 +254,7 @@ function DispensasiScreen() {
                             </>
                         )}
                         <View>
-                            <Text style={styles.text}>Jenis Cuti/Izin : </Text>
+                            <Text style={styles.text}>Jenis Izin : </Text>
                             <Dropdown
                                 style={[styles.input, { height: 50, }, isFocus && { borderColor: 'blue', height: 60 }, styles.dropdown]}
                                 placeholderStyle={styles.placeholderStyle}
@@ -266,7 +266,7 @@ function DispensasiScreen() {
                                 maxHeight={300}
                                 labelField="nm_jenis_izin"
                                 valueField="id_jenis_izin"
-                                placeholder={!isFocus ? 'Jenis Cuti/Izin' : '...'}
+                                placeholder={!isFocus ? 'Jenis Izin' : '...'}
                                 searchPlaceholder="Cari..."
                                 value={value}
                                 onFocus={() => setIsFocus(true)}
