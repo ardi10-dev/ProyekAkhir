@@ -43,6 +43,9 @@ function CutiTahunanScreen({ route, isPageCuti }) {
     const [alasan, setAlasan] = useState('');
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isModalVisibleGgl, setIsModalVisibleGgl] = useState(false);
+    const [tgl_absens, setTglAbsen] = useState(null);
+    const [absenDates, setAbsenDates] = useState([]);
+
 
 
     const [data, setData] = useState([
@@ -96,8 +99,54 @@ function CutiTahunanScreen({ route, isPageCuti }) {
             }
         };
 
+        const fetchCekTanggl = async () => {
+            try {
+                const data = await AsyncStorage.getItem('userData');
+                const userData = JSON.parse(data);
+                const idPegawai = userData.id_pegawai;
+
+                const apiUrl = `https://hc.baktitimah.co.id/pegawaian/api/API_Absen/dataAbsen_get?id_pegawai=${idPegawai}`;
+                const response = await fetch(apiUrl);
+                const absenData = await response.json();
+
+                if (absenData && absenData.data && absenData.data.length > 0) {
+                    const dates = absenData.data.map(item => {
+                        const tanggal = item[4];
+                        const bulan = {
+                            'Januari': '01',
+                            'Februari': '02',
+                            'Maret': '03',
+                            'April': '04',
+                            'Mei': '05',
+                            'Juni': '06',
+                            'Juli': '07',
+                            'Agustus': '08',
+                            'September': '09',
+                            'Oktober': '10',
+                            'November': '11',
+                            'Desember': '12'
+                        };
+
+                        const parts = tanggal.split(' ');
+                        const hari = parts[0].padStart(2, '0');
+                        const bulanAngka = bulan[parts[1]];
+                        const tahun = parts[2];
+
+                        return `${tahun}-${bulanAngka}-${hari}`;
+                    });
+
+                    setAbsenDates(dates);
+                } else {
+                    console.log('No absence data available');
+                }
+            } catch (error) {
+                console.error('Error fetching absence data:', error);
+            }
+        };
+
         fetchUserData();
         fetchCutiData();
+        fetchCekTanggl();
     }, []);
 
     const handleAjukanPress = async () => {
@@ -170,9 +219,30 @@ function CutiTahunanScreen({ route, isPageCuti }) {
 
     const handleStartDateChange = (event, selectedDate) => {
         const currentDate = selectedDate || startDate;
-        console.log("Selected Date:", currentDate);
 
-        if (currentDate < today.setDate(today.getDate())) {
+        // Check if currentDate is valid
+        if (!(currentDate instanceof Date) || isNaN(currentDate.getTime())) {
+            console.error("Invalid date selected:", currentDate);
+            return;
+        }
+
+        // Convert the selected date to a Date object
+        const dateObject = new Date(currentDate);
+        const formattedDate = dateObject.toISOString().split('T')[0]; // Format to YYYY-MM-DD
+
+        // Compare dates
+        if (absenDates.includes(formattedDate)) {
+            Alert.alert(
+                "Tanggal sudah ada",
+                "Tanggal yang dipilih sudah pernah diajukan",
+                [
+                    { text: "OK", onPress: () => setShowStartDatePicker(false) }
+                ]
+            );
+            return;
+        }
+
+        if (dateObject <= today.setDate(today.getDate())) {  // Changed to <= to include today
             Alert.alert(
                 "Tanggal tidak valid",
                 "Silakan pilih tanggal mulai minimal satu hari setelah hari ini.",
@@ -182,11 +252,36 @@ function CutiTahunanScreen({ route, isPageCuti }) {
             );
             return;
         }
-        setShowStartDatePicker(false);
 
+        setShowStartDatePicker(false);
         setStartDate(currentDate);
         console.log("New Start Date:", currentDate);
     };
+
+
+
+
+    // const handleStartDateChange = (event, selectedDate) => {
+    //     const currentDate = selectedDate || startDate;
+    //     console.log("Selected Date:", currentDate);
+
+
+    //     if (currentDate < today.setDate(today.getDate())) {
+    //         Alert.alert(
+    //             "Tanggal tidak valid",
+    //             "Silakan pilih tanggal mulai minimal satu hari setelah hari ini.",
+    //             [
+    //                 { text: "OK", onPress: () => setShowStartDatePicker(false) }
+    //             ]
+    //         );
+    //         return;
+    //     }
+
+    //     setShowStartDatePicker(false);
+
+    //     setStartDate(currentDate);
+    //     console.log("New Start Date:", currentDate);
+    // };
 
 
     const handleEndDateChange = (event, selectedDate) => {
@@ -493,7 +588,7 @@ function CutiTahunanScreen({ route, isPageCuti }) {
                                     onConfirm={() => navigation.navigate('RiwayatStackScreen', { screen: 'RiwayatPCuti' })}
                                 />
                                 <GagalModal visible={isModalVisibleGgl} onClose={() => setIsModalVisibleGgl(false)}
-                                      />
+                                />
                             </View>
 
                         </View>

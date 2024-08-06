@@ -66,7 +66,6 @@ function HalamanAbsensi() {
             if (!pickedImage) {
                 // throw new Error('Wajib Mengupload Foto');
                 setIsModalVisibleGgl(true);
-
             }
             if (!isInArea) {
                 throw new Error('Tidak bisa mengajukan absen karena berada di luar area absen.');

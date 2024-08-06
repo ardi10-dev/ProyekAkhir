@@ -79,17 +79,20 @@ function HalamanUtama({ route, isMainPage }) {
                 const today = new Date().toLocaleDateString('id-ID', {
                     year: 'numeric',
                     month: 'long',
-                    day: 'numeric',
+                    day: '2-digit',
                 });
+                console.log('tgl todayyy',today);
 
                 let isTodayAbsen = false;
                 filterdata.forEach((item) => {
                     if (item[4] == today) {
                         isTodayAbsen = true;
-                    } else if (item[15] == null) {
+                    } 
+                    else if (item[15] == null) {
                         isTodayAbsen = true;
                     }
-                    // console.log(item[4]);
+                    console.log('tglabsensss',item[4]);
+                    
                     // console.log('tgl', item[15]);
                 });
 
@@ -140,32 +143,88 @@ function HalamanUtama({ route, isMainPage }) {
 
         const fetchJamMasuk = async () => {
             try {
-                const jamMasuk = await AsyncStorage.getItem('jam_masuk');
-                if (jamMasuk !== null) {
-                    console.log('Jam Masuk:', jamMasuk);
+                const data = await AsyncStorage.getItem('userData');
+                if (data) {
+                    const userData = JSON.parse(data);
+                    const idPegawai = userData.id_pegawai;
 
-                    setJam_masukShift(jamMasuk);
-                } else {
-                    console.log('Tidak ada jam masuk yang tersimpan.');
+                    const response = await fetch('https://hc.baktitimah.co.id/pegawaian/api/API_Absen/last_absen_id', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `id_pegawai=${idPegawai}`
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+
+                    const responseData = await response.json();
+                    // console.log(responseData.last_id);
+                    // const sortedData = responseData.data.sort((a, b) => parseDate(b[4]) - parseDate(a[4]));
+                    setJam_masukShift(responseData.waktu_masuk);
+                    console.log('Jam Masuk:gg', responseData.waktu_masuk);
+                    // setFilteredData(sortedData);
                 }
             } catch (error) {
-                console.error('Error checking jam_masuk:', error);
+                console.error('Error fetching riwayat izin:', error);
             }
+            // try {
+            //     const jamMasuk = await AsyncStorage.getItem('jam_masuk');
+            //     if (jamMasuk !== null) {
+            //         console.log('Jam Masuk:', jamMasuk);
+
+            //         setJam_masukShift(jamMasuk);
+            //     } else {
+            //         console.log('Tidak ada jam masuk yang tersimpan.');
+            //     }
+            // } catch (error) {
+            //     console.error('Error checking jam_masuk:', error);
+            // }
         };
         const fetchJamKeluar = async () => {
             try {
-                const jamKeluar = await AsyncStorage.getItem('jam_keluar');
-                if (jamKeluar !== null) {
-                    console.log('Jam Keluar:', jamKeluar);
-                    setJamKeluarShift(jamKeluar);
-                } else {
-                    console.log('Tidak ada jam keluar yang tersimpan.');
-                    setJamKeluarShift("00:00:00"); // Atur nilai default jika tidak ada data jam_keluar
+                const data = await AsyncStorage.getItem('userData');
+                if (data) {
+                    const userData = JSON.parse(data);
+                    const idPegawai = userData.id_pegawai;
+
+                    const response = await fetch('https://hc.baktitimah.co.id/pegawaian/api/API_Absen/last_absen_id', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `id_pegawai=${idPegawai}`
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+
+                    const responseData = await response.json();
+                    // console.log(responseData.last_id);
+                    // const sortedData = responseData.data.sort((a, b) => parseDate(b[4]) - parseDate(a[4]));
+                    setJam_KeluarShift(responseData.waktu_keluar);
+                    console.log('Jam keluar:gg', responseData.waktu_keluar);
+                    // setFilteredData(sortedData);
                 }
             } catch (error) {
-                console.error('Error checking jam_keluar:', error);
-                setJamKeluarShift("00:00:00"); // Atur nilai default jika terjadi kesalahan
+                console.error('Error fetching riwayat izin:', error);
             }
+            // try {
+            //     const jamKeluar = await AsyncStorage.getItem('jam_keluar');
+            //     if (jamKeluar !== null) {
+            //         console.log('Jam Keluar:', jamKeluar);
+            //         setJamKeluarShift(jamKeluar);
+            //     } else {
+            //         console.log('Tidak ada jam keluar yang tersimpan.');
+            //         setJamKeluarShift("00:00:00"); // Atur nilai default jika tidak ada data jam_keluar
+            //     }
+            // } catch (error) {
+            //     console.error('Error checking jam_keluar:', error);
+            //     setJamKeluarShift("00:00:00"); // Atur nilai default jika terjadi kesalahan
+            // }
         };
 
 
